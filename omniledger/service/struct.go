@@ -36,9 +36,10 @@ type CollectionView interface {
 	// an error if something went wrong. A non-existing key returns an
 	// error.
 	GetValues(key []byte) (value []byte, contractID string, darcID darc.ID, err error)
-	// IsLeader is true if the contract runs on the leader. This should only be
-	// used for logging purposes.
-	IsLeader() bool
+	// LogLeader allows to log events only on the leader
+	LogLeader(args ...interface{})
+	// LogLeaderf allows to log events only on the leader
+	LogLeaderf(fmt string, args ...interface{})
 }
 
 // roCollection is a wrapper for a collection that satisfies interface
@@ -62,8 +63,16 @@ func (r *roCollection) GetValues(key []byte) (value []byte, contractID string, d
 	return getValueContract(r, key)
 }
 
-func (r *roCollection) IsLeader() bool {
-	return r.isLeader
+func (r *roCollection) LogLeader(args ...interface{}) {
+	if r.isLeader {
+		log.Lvl1(args...)
+	}
+}
+
+func (r *roCollection) LogLeaderf(fmt string, args ...interface{}) {
+	if r.isLeader {
+		log.Lvlf1(fmt, args...)
+	}
 }
 
 // OmniLedgerContract is the type signature of the class functions
@@ -324,8 +333,12 @@ func (c *collectionDB) tryHash(ts []StateChange) (mr []byte, rerr error) {
 	return
 }
 
-func (c *collectionDB) IsLeader() bool {
-	return false
+func (c *collectionDB) LogLeader(args ...interface{}) {
+	log.Lvl1(args...)
+}
+
+func (c *collectionDB) LogLeaderf(fmt string, args ...interface{}) {
+	log.Lvlf1(fmt, args...)
 }
 
 func getInstanceDarc(c CollectionView, iid InstanceID) (*darc.Darc, error) {
@@ -357,6 +370,27 @@ func RegisterContract(s skipchain.GetService, kind string, f OmniLedgerContract)
 		return errors.New("Didn't find our service: " + ServiceName)
 	}
 	return scs.(*Service).registerContract(kind, f)
+}
+
+// SafeAdd will add a to the value of the coin if there will be no
+// overflow.
+func (c *Coin) SafeAdd(a uint64) error {
+	s1 := c.Value + a
+	if s1 < c.Value || s1 < a {
+		return errors.New("uint64 overflow")
+	}
+	c.Value = s1
+	return nil
+}
+
+// SafeSub subtracts a from the value of the coin if there
+// will be no underflow.
+func (c *Coin) SafeSub(a uint64) error {
+	if a <= c.Value {
+		c.Value -= a
+		return nil
+	}
+	return errors.New("uint64 underflow")
 }
 
 type olState struct {

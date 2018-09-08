@@ -16,16 +16,16 @@ var ciZero, ciOne, ciTwo []byte
 var coinZero, coinOne, coinTwo []byte
 
 func init() {
-	ci := CoinInstance{
-		Type: CoinName.Slice(),
+	ci := ol.Coin{
+		Name: CoinName,
 	}
 	var err error
 	ciZero, err = protobuf.Encode(&ci)
 	log.ErrFatal(err)
-	ci.Balance = 1
+	ci.Value = 1
 	ciOne, err = protobuf.Encode(&ci)
 	log.ErrFatal(err)
-	ci.Balance = 2
+	ci.Value = 2
 	ciTwo, err = protobuf.Encode(&ci)
 	log.ErrFatal(err)
 
@@ -83,8 +83,8 @@ func TestCoin_InvokeMint(t *testing.T) {
 }
 
 func TestCoin_InvokeOverflow(t *testing.T) {
-	ci := CoinInstance{
-		Balance: ^uint64(0),
+	ci := ol.Coin{
+		Value: ^uint64(0),
 	}
 	ciBuf, err := protobuf.Encode(&ci)
 	require.Nil(t, err)
@@ -251,6 +251,9 @@ func (ct cvTest) GetValue(key []byte) ([]byte, error) {
 func (ct cvTest) GetContractID(key []byte) (string, error) {
 	return ct.contractIDs[string(key)], nil
 }
-func (ct cvTest) IsLeader() bool {
-	return true
+func (ct cvTest) LogLeader(args ...interface{}) {
+	log.Lvl1(args...)
+}
+func (ct cvTest) LogLeaderf(fmt string, args ...interface{}) {
+	log.Lvlf1(fmt, args...)
 }

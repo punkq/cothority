@@ -59,6 +59,8 @@ func (s *Service) ContractPopParty(cdb ol.CollectionView, inst ol.Instruction, c
 	// 	return
 	// }
 
+	cdb.LogLeaderf("ContractPoPParty: %+v", inst)
+
 	var darcID darc.ID
 	var ppi PopPartyInstance
 	if inst.Spawn == nil {
@@ -126,13 +128,13 @@ func (s *Service) ContractPopParty(cdb ol.CollectionView, inst ol.Instruction, c
 
 			for i, pub := range fs.Attendees {
 				log.Lvlf3("Creating darc for attendee %d %s", i, pub)
-				d, sc, err := createDarc(darcID, pub)
+				d, sc, err := createDarc(cdb, darcID, pub)
 				if err != nil {
 					return nil, nil, err
 				}
 				scs = append(scs, sc)
 
-				sc, err = createCoin(inst, d, pub, 1000000)
+				sc, err = createCoin(cdb, inst, d, pub, 1000000)
 				if err != nil {
 					return nil, nil, err
 				}
@@ -147,17 +149,18 @@ func (s *Service) ContractPopParty(cdb ol.CollectionView, inst ol.Instruction, c
 				if err != nil {
 					return nil, nil, errors.New("couldn't unmarshal point: " + err.Error())
 				}
-				log.Lvlf3("Appending service-darc and account for %s", ppi.Service)
-				d, sc, err := createDarc(darcID, ppi.Service)
-				if err != nil {
-					return nil, nil, err
-				}
-				scs = append(scs, sc)
-				sc, err = createCoin(inst, d, ppi.Service, 0)
-				if err != nil {
-					return nil, nil, err
-				}
-				scs = append(scs, sc)
+				cdb.LogLeaderf("Appending service-darc and account for %s", ppi.Service)
+
+				// d, sc, err := createDarc(cdb, darcID, ppi.Service)
+				// if err != nil {
+				// 	return nil, nil, err
+				// }
+				// scs = append(scs, sc)
+				// sc, err = createCoin(cdb, inst, d, ppi.Service, 0)
+				// if err != nil {
+				// 	return nil, nil, err
+				// }
+				// scs = append(scs, sc)
 			}
 
 			ppiBuf, err := protobuf.Encode(&ppi)
@@ -180,7 +183,7 @@ func (s *Service) ContractPopParty(cdb ol.CollectionView, inst ol.Instruction, c
 	}
 }
 
-func createDarc(darcID darc.ID, pub kyber.Point) (d *darc.Darc, sc ol.StateChange, err error) {
+func createDarc(cdb ol.CollectionView, darcID darc.ID, pub kyber.Point) (d *darc.Darc, sc ol.StateChange, err error) {
 	id := darc.NewIdentityEd25519(pub)
 	rules := darc.InitRules([]darc.Identity{id}, []darc.Identity{id})
 	rules.AddRule(darc.Action("invoke:transfer"), expression.Expr(id.String()))
@@ -190,13 +193,13 @@ func createDarc(darcID darc.ID, pub kyber.Point) (d *darc.Darc, sc ol.StateChang
 		err = errors.New("couldn't marshal darc: " + err.Error())
 		return
 	}
-	log.LLvlf3("Creating darc %x/%x", d.GetBaseID(), sha256.Sum256(darcBuf))
+	cdb.LogLeaderf("Creating darc %x/%x", d.GetBaseID(), sha256.Sum256(darcBuf))
 	sc = ol.NewStateChange(ol.Create, ol.NewInstanceID(d.GetBaseID()),
 		ol.ContractDarcID, darcBuf, darcID)
 	return
 }
 
-func createCoin(inst ol.Instruction, d *darc.Darc, pub kyber.Point, balance uint64) (sc ol.StateChange, err error) {
+func createCoin(cdb ol.CollectionView, inst ol.Instruction, d *darc.Darc, pub kyber.Point, balance uint64) (sc ol.StateChange, err error) {
 	iid := sha256.New()
 	iid.Write(inst.InstanceID.Slice())
 	pubBuf, err := pub.MarshalBinary()
@@ -215,7 +218,7 @@ func createCoin(inst ol.Instruction, d *darc.Darc, pub kyber.Point, balance uint
 		return
 	}
 	coinID := iid.Sum(nil)
-	log.LLvlf3("Creating coin-account %x", coinID)
+	cdb.LogLeaderf("Creating coin-account %x", coinID)
 	return ol.NewStateChange(ol.Create, ol.NewInstanceID(coinID),
 		contracts.ContractCoinID, cciBuf, d.GetBaseID()), nil
 }
