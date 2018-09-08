@@ -190,7 +190,7 @@ func createDarc(darcID darc.ID, pub kyber.Point) (d *darc.Darc, sc ol.StateChang
 		err = errors.New("couldn't marshal darc: " + err.Error())
 		return
 	}
-	log.Lvlf3("Final %x/%x", d.GetBaseID(), sha256.Sum256(darcBuf))
+	log.LLvlf3("Creating darc %x/%x", d.GetBaseID(), sha256.Sum256(darcBuf))
 	sc = ol.NewStateChange(ol.Create, ol.NewInstanceID(d.GetBaseID()),
 		ol.ContractDarcID, darcBuf, darcID)
 	return
@@ -215,7 +215,7 @@ func createCoin(inst ol.Instruction, d *darc.Darc, pub kyber.Point, balance uint
 		return
 	}
 	coinID := iid.Sum(nil)
-	log.Lvlf3("Creating account %x", coinID)
+	log.LLvlf3("Creating coin-account %x", coinID)
 	return ol.NewStateChange(ol.Create, ol.NewInstanceID(coinID),
 		contracts.ContractCoinID, cciBuf, d.GetBaseID()), nil
 }

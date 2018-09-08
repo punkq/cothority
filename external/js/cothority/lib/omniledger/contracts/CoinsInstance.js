@@ -77,6 +77,7 @@ class CoinsInstance {
       invoke
     );
 
+    console.dir("darcid is:", this._instance.darcId);
     inst.signBy(this._instance.darcId, [signer]);
     const trans = new ClientTransaction([inst]);
 
