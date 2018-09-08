@@ -149,18 +149,24 @@ func (s *Service) ContractPopParty(cdb ol.CollectionView, inst ol.Instruction, c
 				if err != nil {
 					return nil, nil, errors.New("couldn't unmarshal point: " + err.Error())
 				}
-				cdb.LogLeaderf("Appending service-darc and account for %s", ppi.Service)
+				cdb.LogLeaderf("Checking if service-darc and account for %s should be appended", ppi.Service)
 
-				// d, sc, err := createDarc(cdb, darcID, ppi.Service)
-				// if err != nil {
-				// 	return nil, nil, err
-				// }
-				// scs = append(scs, sc)
-				// sc, err = createCoin(cdb, inst, d, ppi.Service, 0)
-				// if err != nil {
-				// 	return nil, nil, err
-				// }
-				// scs = append(scs, sc)
+				d, sc, err := createDarc(cdb, darcID, ppi.Service)
+				if err != nil {
+					return nil, nil, err
+				}
+				_, _, _, err = cdb.GetValues(d.GetBaseID())
+				if err != nil {
+					cdb.LogLeader("Appending service-darc because it doesn't exist yet")
+					scs = append(scs, sc)
+				}
+
+				sc, err = createCoin(cdb, inst, d, ppi.Service, 0)
+				if err != nil {
+					return nil, nil, err
+				}
+				cdb.LogLeader("Appending coin-instance")
+				scs = append(scs, sc)
 			}
 
 			ppiBuf, err := protobuf.Encode(&ppi)
@@ -170,6 +176,10 @@ func (s *Service) ContractPopParty(cdb ol.CollectionView, inst ol.Instruction, c
 
 			// Update existing final statement
 			scs = append(scs, ol.NewStateChange(ol.Update, inst.InstanceID, ContractPopParty, ppiBuf, darcID))
+
+			// for _, sc := range scs {
+			// 	cdb.LogLeaderf("StateChange: %+v", sc)
+			// }
 
 			return scs, coins, nil
 		case "AddParty":
@@ -193,7 +203,7 @@ func createDarc(cdb ol.CollectionView, darcID darc.ID, pub kyber.Point) (d *darc
 		err = errors.New("couldn't marshal darc: " + err.Error())
 		return
 	}
-	cdb.LogLeaderf("Creating darc %x/%x", d.GetBaseID(), sha256.Sum256(darcBuf))
+	cdb.LogLeaderf("Creating darc baseID:%x sha256:%x", d.GetBaseID(), sha256.Sum256(darcBuf))
 	sc = ol.NewStateChange(ol.Create, ol.NewInstanceID(d.GetBaseID()),
 		ol.ContractDarcID, darcBuf, darcID)
 	return

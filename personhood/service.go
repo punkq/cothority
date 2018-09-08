@@ -175,11 +175,14 @@ func (s *Service) ListMessages(lm *ListMessages) (*ListMessagesReply, error) {
 func (s *Service) ReadMessage(rm *ReadMessage) (*ReadMessageReply, error) {
 	msg := s.storage.Messages[string(rm.MsgID)]
 	if msg == nil {
-		return nil, errors.New("no such subject")
+		return nil, errors.New("no such messageID")
 	}
 	party := s.storage.Parties[string(rm.PartyIID)]
 	if party == nil {
-		return nil, errors.New("no such party")
+		for p := range s.storage.Parties {
+			log.Printf("Party available: %x", p)
+		}
+		return nil, errors.New("no such partyIID")
 	}
 	if msg.Balance < msg.Reward {
 		return &ReadMessageReply{*msg}, nil
