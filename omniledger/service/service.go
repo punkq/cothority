@@ -593,7 +593,7 @@ func (s *Service) skService() *skipchain.Service {
 
 func (s *Service) isLeader(view viewchange.View) bool {
 	sb := s.db().GetByID(view.ID)
-	if view.LeaderIndex < len(sb.Roster.List) {
+	if sb != nil && view.LeaderIndex < len(sb.Roster.List) {
 		sid := sb.Roster.List[view.LeaderIndex]
 		return sid.ID.Equal(s.ServerIdentity().ID)
 	}

@@ -40,8 +40,10 @@ type Service struct {
 // LinkPoP stores a link to a pop-party to accept this configuration. It will
 // try to create an account to receive payments from clients.
 func (s *Service) LinkPoP(lp *LinkPoP) (*StringReply, error) {
+	log.Printf("%s: Linking pop: %+v", s.ServerIdentity(), lp)
 	s.storage.Parties[string(lp.Party.InstanceID.Slice())] = &lp.Party
 	s.save()
+	log.Printf("%s: parties: %+v", s.ServerIdentity(), s.storage.Parties)
 	return &StringReply{}, nil
 }
 
@@ -51,7 +53,7 @@ func (s *Service) RegisterQuestionnaire(rq *RegisterQuestionnaire) (*StringReply
 	idStr := string(rq.Questionnaire.ID)
 	s.storage.Questionnaires[idStr] = &rq.Questionnaire
 	s.storage.Replies[idStr] = &Reply{}
-	return &StringReply{}, nil
+	return &StringReply{}, s.save()
 }
 
 // ListQuestionnaires requests all questionnaires from Start, but not more than
@@ -112,7 +114,7 @@ func (s *Service) AnswerQuestionnaire(aq *AnswerQuestionnaire) (*StringReply, er
 	r.Users = append(r.Users, aq.Account)
 	// TODO: send reard to account
 
-	return &StringReply{}, nil
+	return &StringReply{}, s.save()
 }
 
 // TopupQuestionnaire can be used to add new balance to a questionnaire.
@@ -134,7 +136,8 @@ func (s *Service) SendMessage(sm *SendMessage) (*StringReply, error) {
 	}
 	s.storage.Messages[idStr] = &sm.Message
 	s.storage.Read[idStr] = &readMsg{}
-	return &StringReply{}, nil
+
+	return &StringReply{}, s.save()
 }
 
 // ListMessages sorts all messages by balance and sends back the messages from
@@ -178,10 +181,11 @@ func (s *Service) ReadMessage(rm *ReadMessage) (*ReadMessageReply, error) {
 		return nil, errors.New("no such messageID")
 	}
 	party := s.storage.Parties[string(rm.PartyIID)]
+	log.Printf("%s: parties: %+v", s.ServerIdentity(), s.storage.Parties)
+	for p := range s.storage.Parties {
+		log.Printf("Party available: %x", p)
+	}
 	if party == nil {
-		for p := range s.storage.Parties {
-			log.Printf("Party available: %x", p)
-		}
 		return nil, errors.New("no such partyIID")
 	}
 	if msg.Balance < msg.Reward {
@@ -233,7 +237,7 @@ func (s *Service) ReadMessage(rm *ReadMessage) (*ReadMessageReply, error) {
 		return nil, errors.New("couldn't send reward: " + err.Error())
 	}
 
-	return &ReadMessageReply{*msg}, nil
+	return &ReadMessageReply{*msg}, s.save()
 }
 
 // TopupMessage to fill up the balance of a message
