@@ -42,17 +42,21 @@ var errUnderflow = errors.New("integer underflow")
 func ContractCoin(cdb ol.CollectionView, inst ol.Instruction, c []ol.Coin) (sc []ol.StateChange, cOut []ol.Coin, err error) {
 	cOut = c
 
-	err = inst.VerifyDarcSignature(cdb)
-	if err != nil {
-		return
-	}
-
 	var value []byte
 	var darcID darc.ID
 	value, _, darcID, err = cdb.GetValues(inst.InstanceID.Slice())
 	if err != nil {
 		return
 	}
+
+	if cdb.IsLeader() {
+		log.Printf("DarcID: %x", darcID)
+	}
+	// err = inst.VerifyDarcSignature(cdb)
+	// if err != nil {
+	// 	return
+	// }
+
 	var ci CoinInstance
 	if inst.Spawn == nil {
 		// Only if its NOT a spawn instruction is ther data in the instance
@@ -68,7 +72,9 @@ func ContractCoin(cdb ol.CollectionView, inst ol.Instruction, c []ol.Coin) (sc [
 	case ol.SpawnType:
 		// Spawn creates a new coin account as a separate instance.
 		ca := inst.DeriveID("")
-		log.Lvlf3("Spawning coin to %x", ca.Slice())
+		if cdb.IsLeader() {
+			log.LLvlf3("Spawning coin to %x", ca.Slice())
+		}
 		if t := inst.Spawn.Args.Search("type"); t != nil {
 			ci.Type = t
 		} else {
@@ -98,28 +104,36 @@ func ContractCoin(cdb ol.CollectionView, inst ol.Instruction, c []ol.Coin) (sc [
 		switch inst.Invoke.Command {
 		case "mint":
 			// mint simply adds this amount of coins to the account.
-			log.Lvl2("minting", coinsArg)
+			if cdb.IsLeader() {
+				log.Lvl2("minting", coinsArg)
+			}
 			ci.Balance, err = safeAdd(ci.Balance, coinsArg)
 			if err != nil {
 				return
 			}
 		case "transfer":
-			// transfer sends a given amount of coins to another account.
-			ci.Balance, err = safeSub(ci.Balance, coinsArg)
-			if err != nil {
-				return
-			}
-
 			target := inst.Invoke.Args.Search("destination")
 			var (
 				v   []byte
 				cid string
 				did darc.ID
 			)
+
+			if cdb.IsLeader() {
+				log.LLvlf3("transferring %d to %x", coinsArg, target)
+			}
+
 			v, cid, did, err = cdb.GetValues(target)
 			if err == nil && cid != ContractCoinID {
 				err = errors.New("destination is not a coin contract")
 			}
+			if err != nil {
+				err = errors.New("Couldn't get values of destination: " + err.Error())
+				return
+			}
+
+			// transfer sends a given amount of coins to another account.
+			ci.Balance, err = safeSub(ci.Balance, coinsArg)
 			if err != nil {
 				return
 			}
@@ -138,7 +152,6 @@ func ContractCoin(cdb ol.CollectionView, inst ol.Instruction, c []ol.Coin) (sc [
 				return nil, nil, errors.New("couldn't marshal target account: " + err.Error())
 			}
 
-			log.Lvlf3("transferring %d to %x", coinsArg, target)
 			sc = append(sc, ol.NewStateChange(ol.Update, ol.NewInstanceID(target),
 				ContractCoinID, targetBuf, did))
 		case "fetch":

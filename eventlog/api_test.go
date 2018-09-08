@@ -394,7 +394,7 @@ func (s *ser) waitNextBlock(t *testing.T, current skipchain.SkipBlockID) {
 // if an event is in the wrong bucket. This function is useful to check the
 // correctness of buckets.
 func (s *Service) checkBuckets(inst omniledger.InstanceID, id skipchain.SkipBlockID, ct0 int) error {
-	v := s.omni.GetCollectionView(id)
+	v := s.omni.GetCollectionView(id, nil)
 	el := eventLog{Instance: inst, v: v}
 
 	id, b, err := el.getLatestBucket()

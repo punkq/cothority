@@ -251,3 +251,6 @@ func (ct cvTest) GetValue(key []byte) ([]byte, error) {
 func (ct cvTest) GetContractID(key []byte) (string, error) {
 	return ct.contractIDs[string(key)], nil
 }
+func (ct cvTest) IsLeader() bool {
+	return true
+}

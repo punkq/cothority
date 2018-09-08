@@ -57,7 +57,7 @@ func (s *Service) Search(req *SearchRequest) (*SearchResponse, error) {
 		req.To = time.Now().UnixNano()
 	}
 
-	v := s.omni.GetCollectionView(req.ID)
+	v := s.omni.GetCollectionView(req.ID, nil)
 	el := &eventLog{Instance: req.Instance, v: v}
 
 	id, b, err := el.getLatestBucket()

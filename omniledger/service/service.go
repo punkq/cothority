@@ -223,7 +223,7 @@ func (s *Service) AddTransaction(req *AddTxRequest) (*AddTxResponse, error) {
 
 	if req.InclusionWait > 0 {
 		// Wait for InclusionWait new blocks and look if our transaction is in it.
-		interval, err := LoadBlockIntervalFromColl(s.GetCollectionView(req.SkipchainID))
+		interval, err := LoadBlockIntervalFromColl(s.GetCollectionView(req.SkipchainID, nil))
 		if err != nil {
 			return nil, errors.New("couldn't get collectionView: " + err.Error())
 		}
@@ -565,9 +565,14 @@ func isViewChangeTx(txs TxResults) *viewchange.View {
 
 // GetCollectionView returns a read-only accessor to the collection
 // for the given skipchain.
-func (s *Service) GetCollectionView(scID skipchain.SkipBlockID) CollectionView {
-	cdb := s.getCollection(scID)
-	return &roCollection{cdb.coll}
+func (s *Service) GetCollectionView(scID skipchain.SkipBlockID, coll *collection.Collection) CollectionView {
+	if coll == nil {
+		coll = s.getCollection(scID).coll
+	}
+	return &roCollection{coll, s.isLeader(viewchange.View{
+		ID:          scID,
+		LeaderIndex: 0,
+	})}
 }
 
 func (s *Service) getCollection(id skipchain.SkipBlockID) *collectionDB {
@@ -602,7 +607,7 @@ func (s *Service) db() *skipchain.SkipBlockDB {
 
 // LoadConfig loads the configuration from a skipchain ID.
 func (s *Service) LoadConfig(scID skipchain.SkipBlockID) (*ChainConfig, error) {
-	coll := s.GetCollectionView(scID)
+	coll := s.GetCollectionView(scID, nil)
 	if coll == nil {
 		return nil, errors.New("nil collection DB")
 	}
@@ -611,7 +616,7 @@ func (s *Service) LoadConfig(scID skipchain.SkipBlockID) (*ChainConfig, error) {
 
 // LoadGenesisDarc loads the genesis darc of the given skipchain ID.
 func (s *Service) LoadGenesisDarc(scID skipchain.SkipBlockID) (*darc.Darc, error) {
-	coll := s.GetCollectionView(scID)
+	coll := s.GetCollectionView(scID, nil)
 	return getInstanceDarc(coll, ConfigInstanceID)
 }
 
@@ -621,7 +626,7 @@ func (s *Service) LoadBlockInterval(scID skipchain.SkipBlockID) (time.Duration, 
 	if collDb == nil {
 		return defaultInterval, errors.New("nil collection DB")
 	}
-	return LoadBlockIntervalFromColl(&roCollection{collDb.coll})
+	return LoadBlockIntervalFromColl(s.GetCollectionView(scID, collDb.coll))
 }
 
 func (s *Service) startPolling(scID skipchain.SkipBlockID, interval time.Duration) chan bool {
@@ -816,7 +821,7 @@ func (s *Service) verifySkipBlock(newID []byte, newSB *skipchain.SkipBlock) bool
 			return false
 		}
 	}
-	config, err := LoadConfigFromColl(&roCollection{collClone})
+	config, err := LoadConfigFromColl(s.GetCollectionView(newSB.SkipChainID(), collClone))
 	if err != nil {
 		log.Error(s.ServerIdentity(), err)
 		return false
@@ -892,9 +897,10 @@ clientTransactions:
 		// Make a new collection for each instruction. If the instruction is sucessfully
 		// implemented and changes applied, then keep it (via cdbTemp = cdbI.c),
 		// otherwise dump it.
-		cdbI := &roCollection{cdbTemp.Clone()}
+		cdbI := cdbTemp.Clone()
+		cdbIV := s.GetCollectionView(scID, cdbI)
 		for _, instr := range tx.ClientTransaction.Instructions {
-			scs, cout, err := s.executeInstruction(cdbI, cin, instr)
+			scs, cout, err := s.executeInstruction(cdbIV, cin, instr)
 			if err != nil {
 				log.Errorf("%s Call to contract returned error: %s", s.ServerIdentity(), err)
 				tx.Accepted = false
@@ -902,7 +908,7 @@ clientTransactions:
 				continue clientTransactions
 			}
 			for _, sc := range scs {
-				if err := storeInColl(cdbI.c, &sc); err != nil {
+				if err := storeInColl(cdbI, &sc); err != nil {
 					log.Error(s.ServerIdentity(), "failed to add to collections with error: "+err.Error())
 					tx.Accepted = false
 					txOut = append(txOut, tx)
@@ -920,7 +926,7 @@ clientTransactions:
 				return
 			}
 		}
-		cdbTemp = cdbI.c
+		cdbTemp = cdbI
 		tx.Accepted = true
 		txOut = append(txOut, tx)
 	}
