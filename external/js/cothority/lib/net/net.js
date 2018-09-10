@@ -43,7 +43,6 @@ function Socket(addr, service) {
             const path = this.url + "/" + request.replace(/.*\./, '');
             console.log("net.Socket: new WebSocket2(" + path + ")");
             const ws = new WS(path);
-            console.log("getting models");
             const requestModel = this.protobuf.lookup(request);
             if (requestModel === undefined) {
                 reject(new Error("Model " + request + " not found"));
@@ -55,25 +54,17 @@ function Socket(addr, service) {
                 reject(new Error("Model " + response + " not found"));
             }
 
-            console.log("defining events");
             ws.on('open', () => {
-                console.log("opened")
                 const errMsg = requestModel.verify(data);
                 if (errMsg) {
                     reject(new Error(errMsg));
                 }
-                console.log("creating message")
                 const message = requestModel.create(data);
-                console.log("encoding message")
                 const marshal = requestModel.encode(message).finish();
-                console.log("sending message")
                 ws.send(marshal);
             });
 
             ws.on('message', (socket, message) => {
-                console.log("event 2 is:");
-                listObject(socket);
-                listObject(message);
                 // const data = event.data;
                 let buffer = new Uint8Array(message);
                 try {
@@ -100,7 +91,6 @@ function Socket(addr, service) {
                 reject(error);
             });
 
-            console.log("opening");
             ws.open();
         });
     };
