@@ -23,9 +23,9 @@ import (
 	"github.com/dedis/cothority/ftcosi/check"
 	_ "github.com/dedis/cothority/ftcosi/protocol"
 	_ "github.com/dedis/cothority/ftcosi/service"
-	"github.com/dedis/cothority/omniledger/contracts"
 	"github.com/dedis/cothority/omniledger/darc"
 	"github.com/dedis/cothority/omniledger/darc/expression"
+	"github.com/dedis/cothority/omniledger/ol/lib"
 	ol "github.com/dedis/cothority/omniledger/service"
 	ph "github.com/dedis/cothority/personhood"
 	"github.com/dedis/protobuf"
@@ -638,26 +638,16 @@ func omniStore(c *cli.Context) error {
 	}
 
 	// Load the omniledger configuration
-	buf, err := ioutil.ReadFile(c.Args().First())
+	cfg, _, err := lib.LoadConfig(c.Args().First())
 	if err != nil {
 		return err
 	}
-	_, msgCfg, err := network.Unmarshal(buf, cothority.Suite)
-	if err != nil {
-		return err
-	}
-	cfg := msgCfg.(*ol.Config)
 
 	// Load the signer
-	buf, err = ioutil.ReadFile(c.Args().Get(1))
+	signer, err := lib.LoadSigner(c.Args().Get(1))
 	if err != nil {
 		return err
 	}
-	_, msgSigner, err := network.Unmarshal(buf, cothority.Suite)
-	if err != nil {
-		return err
-	}
-	signer := msgSigner.(*darc.Signer)
 
 	log.Info("Finished loading configuration and signer.")
 
@@ -771,7 +761,7 @@ func omniStore(c *cli.Context) error {
 		Instructions: ol.Instructions{inst},
 	}
 	log.Info("Contacting omniledger to store the new darc")
-	olc := ol.NewClientConfig(*cfg)
+	olc := ol.NewClient(cfg.OmniledgerID, cfg.Roster)
 	_, err = olc.AddTransactionAndWait(ct, 10)
 	if err != nil {
 		return err
@@ -827,26 +817,16 @@ func omniFinalize(c *cli.Context) error {
 	}
 
 	// Load the omniledger configuration
-	buf, err := ioutil.ReadFile(c.Args().First())
+	cfg, ocl, err := lib.LoadConfig(c.Args().First())
 	if err != nil {
 		return err
 	}
-	_, msgCfg, err := network.Unmarshal(buf, cothority.Suite)
-	if err != nil {
-		return err
-	}
-	cfg := msgCfg.(*ol.Config)
 
 	// Load the signer
-	buf, err = ioutil.ReadFile(c.Args().Get(1))
+	signer, err := lib.LoadSigner(c.Args().Get(1))
 	if err != nil {
 		return err
 	}
-	_, msgSigner, err := network.Unmarshal(buf, cothority.Suite)
-	if err != nil {
-		return err
-	}
-	signer := msgSigner.(*darc.Signer)
 
 	// Get the party-id
 	partyID, err := hex.DecodeString(c.Args().Get(2))
@@ -914,16 +894,16 @@ func omniFinalize(c *cli.Context) error {
 		return errors.New("couldn't sign instruction: " + err.Error())
 	}
 
-	olc := ol.NewClientConfig(*cfg)
-	_, err = olc.AddTransactionAndWait(ctx, 10)
+	_, err = ocl.AddTransactionAndWait(ctx, 10)
 	if err != nil {
 		return errors.New("error while sending transaction: " + err.Error())
 	}
 
-	err = ph.NewClient().LinkPoP(cfg.Roster.List[0], partyInstance, ph.Party{
-		OmniLedgerID:   cfg.ID,
+	log.Print("linkpop", fs.Desc.Roster)
+	err = ph.NewClient().LinkPoP(fs.Desc.Roster.List[0], ph.Party{
+		OmniLedgerID:   cfg.OmniledgerID,
 		FinalStatement: *fs,
-		Account:        partyInstance,
+		InstanceID:     partyInstance,
 		Darc:           cfg.GenesisDarc,
 		Signer:         *signer,
 	})
@@ -941,15 +921,10 @@ func omniCoinShow(c *cli.Context) error {
 	}
 
 	// Load the omniledger configuration
-	buf, err := ioutil.ReadFile(c.Args().First())
+	_, ocl, err := lib.LoadConfig(c.Args().First())
 	if err != nil {
 		return err
 	}
-	_, msgCfg, err := network.Unmarshal(buf, cothority.Suite)
-	if err != nil {
-		return err
-	}
-	cfg := msgCfg.(*ol.Config)
 
 	partyInstanceID, err := hex.DecodeString(c.Args().Get(1))
 	if err != nil {
@@ -963,8 +938,7 @@ func omniCoinShow(c *cli.Context) error {
 		return errors.New("couldn't parse public-key or accountID: " + err.Error())
 	}
 
-	olc := ol.NewClientConfig(*cfg)
-	accountProof, err := olc.GetProof(accountID)
+	accountProof, err := ocl.GetProof(accountID)
 	if err != nil {
 		return errors.New("couldn't get proof for account: " + err.Error())
 	}
@@ -976,7 +950,7 @@ func omniCoinShow(c *cli.Context) error {
 		h.Write(partyInstanceID)
 		h.Write(accountID)
 		accountID = h.Sum(nil)
-		accountProof, err = olc.GetProof(accountID)
+		accountProof, err = ocl.GetProof(accountID)
 		if err != nil {
 			return errors.New("couldn't get proof for account: " + err.Error())
 		}
@@ -991,12 +965,12 @@ func omniCoinShow(c *cli.Context) error {
 	if err != nil {
 		return errors.New("couldn't get value from proof: " + err.Error())
 	}
-	ci := contracts.CoinInstance{}
+	ci := ol.Coin{}
 	err = protobuf.Decode(v[0], &ci)
 	if err != nil {
 		return errors.New("couldn't unmarshal coin balance: " + err.Error())
 	}
-	log.Info("Coin balance is: ", ci.Balance)
+	log.Info("Coin value is: ", ci.Value)
 	return nil
 }
 
@@ -1006,15 +980,10 @@ func omniCoinTransfer(c *cli.Context) error {
 	}
 
 	// Load the omniledger configuration
-	buf, err := ioutil.ReadFile(c.Args().First())
+	_, ocl, err := lib.LoadConfig(c.Args().First())
 	if err != nil {
 		return err
 	}
-	_, msgCfg, err := network.Unmarshal(buf, cothority.Suite)
-	if err != nil {
-		return err
-	}
-	cfg := msgCfg.(*ol.Config)
 
 	partyID, err := hex.DecodeString(c.Args().Get(1))
 	if err != nil {
@@ -1056,8 +1025,7 @@ func omniCoinTransfer(c *cli.Context) error {
 	}
 
 	log.Info("Getting account of source")
-	olc := ol.NewClientConfig(*cfg)
-	srcInstanceProof, err := olc.GetProof(srcAddr)
+	srcInstanceProof, err := ocl.GetProof(srcAddr)
 	if err != nil {
 		return errors.New("couldn't get source instance: " + err.Error())
 	}
@@ -1113,7 +1081,7 @@ func omniCoinTransfer(c *cli.Context) error {
 		return errors.New("couldn't sign transaction: " + err.Error())
 	}
 
-	_, err = olc.AddTransactionAndWait(ctx, 10)
+	_, err = ocl.AddTransactionAndWait(ctx, 10)
 	if err != nil {
 		return errors.New("couldn't add transaction: " + err.Error())
 	}

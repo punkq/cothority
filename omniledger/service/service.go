@@ -836,9 +836,9 @@ func (s *Service) verifySkipBlock(newID []byte, newSB *skipchain.SkipBlock) bool
 
 	// This is to boost the acceptable timestamp window when dealing with
 	// very short block intervals, like in testing. If a production OmniLedger
-	// had a block interval of 5 seconds, for example, this minimum
-	// not trigger, and the acceptable window would be ± 10 sec.
-	const minTimestampWindow = 1 * time.Second
+	// had a block interval of 30 seconds, for example, this minimum
+	// not trigger, and the acceptable window would be ± 30 sec.
+	const minTimestampWindow = 10 * time.Second
 
 	window := 4 * config.BlockInterval
 	if window < minTimestampWindow {
