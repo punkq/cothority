@@ -895,12 +895,12 @@ func omniFinalize(c *cli.Context) error {
 		return errors.New("couldn't sign instruction: " + err.Error())
 	}
 
-	// _, err = ocl.AddTransactionAndWait(ctx, 10)
-	// if err != nil {
-	// 	return errors.New("error while sending transaction: " + err.Error())
-	// }
+	_, err = ocl.AddTransactionAndWait(ctx, 10)
+	if err != nil {
+		return errors.New("error while sending transaction: " + err.Error())
+	}
 
-	log.Print("linkpop", ocl, fs.Desc.Roster)
+	log.Print("linkpop", fs.Desc.Roster)
 	err = ph.NewClient().LinkPoP(fs.Desc.Roster.List[0], ph.Party{
 		OmniLedgerID:   cfg.OmniledgerID,
 		FinalStatement: *fs,
