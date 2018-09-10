@@ -23,7 +23,6 @@ import (
 	"github.com/dedis/cothority/ftcosi/check"
 	_ "github.com/dedis/cothority/ftcosi/protocol"
 	_ "github.com/dedis/cothority/ftcosi/service"
-	"github.com/dedis/cothority/omniledger/contracts"
 	"github.com/dedis/cothority/omniledger/darc"
 	"github.com/dedis/cothority/omniledger/darc/expression"
 	"github.com/dedis/cothority/omniledger/ol/lib"
@@ -966,12 +965,12 @@ func omniCoinShow(c *cli.Context) error {
 	if err != nil {
 		return errors.New("couldn't get value from proof: " + err.Error())
 	}
-	ci := contracts.CoinInstance{}
+	ci := ol.Coin{}
 	err = protobuf.Decode(v[0], &ci)
 	if err != nil {
 		return errors.New("couldn't unmarshal coin balance: " + err.Error())
 	}
-	log.Info("Coin balance is: ", ci.Balance)
+	log.Info("Coin value is: ", ci.Value)
 	return nil
 }
 
