@@ -92,7 +92,7 @@ function Socket(addr, service) {
             ws.on('close', (socket, code, reason) => {
                 console.log("closing:", code, reason);
                 if (code != 4000) {
-                    reject(new Error(event.reason));
+                    reject(new Error(reason));
                 }
             });
 
