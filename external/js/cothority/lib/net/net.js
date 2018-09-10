@@ -41,7 +41,7 @@ function Socket(addr, service) {
     this.send = (request, response, data) => {
         return new Promise((resolve, reject) => {
             const path = this.url + "/" + request.replace(/.*\./, '');
-            console.log("net.Socket: new WebSocket2(" + path + ")");
+            console.log("net.Socket: new WebSocket3(" + path + ")");
             const ws = new WS(path);
             const requestModel = this.protobuf.lookup(request);
             if (requestModel === undefined) {
