@@ -36,6 +36,7 @@ public class ByzCoinRPC {
     private SkipBlock genesis;
     private SkipBlock latest;
     private SkipchainRPC skipchain;
+    private Subscription subscription;
     public static final int currentVersion = 1;
 
     private final Logger logger = LoggerFactory.getLogger(ByzCoinRPC.class);
@@ -71,6 +72,7 @@ public class ByzCoinRPC {
         config = new Config(blockInterval);
         roster = r;
         genesisDarc = d;
+        subscription = new Subscription(this);
     }
 
     /**
@@ -99,6 +101,7 @@ public class ByzCoinRPC {
         this.roster = roster;
         genesis = skipchain.getSkipblock(skipchainId);
         latest = skipchain.getLatestSkipblock();
+        subscription = new Subscription(this);
     }
 
     /**
@@ -266,6 +269,41 @@ public class ByzCoinRPC {
     public SkipchainRPC getSkipchain() {
         logger.warn("usually you should not need this - please tell us why you do anyway.");
         return skipchain;
+    }
+
+    /**
+     * Subscribes to all new blocks that might arrive. The subscription is implemented using a polling
+     * approach until we have a working streaming solution.
+     * @param br is a BlockReceiver that will be called with any new block(s) available.
+     */
+    public void subscribeBlock(Subscription.BlockReceiver br){
+        subscription.subscribeBlock(br);
+    }
+
+    /**
+     * Unsubscribes a BlockReceiver.
+     * @param br the blockreceiver to unsubscribe.
+     */
+    public void unsubscribeBlock(Subscription.BlockReceiver br){
+        subscription.unsubscribeBlock(br);
+    }
+
+    /**
+     * Subscribes to all new ClientTransactions that have been integrated into ByzCoin. The subscription
+     * system polls the skipchain in regular intervals and calls all receivers with a list of all new
+     * ClientTransactions that have been included into ByzCoin.
+     * @param ctr
+     */
+    public void subscribeClientTransaction(Subscription.ClientTransactionReceiver ctr){
+        subscription.subscribeClientTransaction(ctr);
+    }
+
+    /**
+     * Unsubscribes a ClientTransactionReceiver.
+     * @param ctr the ClientTransactionReceiver to unsubscribe.
+     */
+    public void unsubscribeClientTransaction(Subscription.ClientTransactionReceiver ctr){
+        subscription.unsubscribeClientTransaction(ctr);
     }
 
    /**

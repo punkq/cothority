@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,13 +39,13 @@ public class ByzCoinRPCTest {
         genesisDarc = new Darc(rules, "genesis".getBytes());
 
         bc = new ByzCoinRPC(testInstanceController.getRoster(), genesisDarc, Duration.of(100, MILLIS));
-        if (!bc.checkLiveness()){
+        if (!bc.checkLiveness()) {
             throw new CothorityCommunicationException("liveness check failed");
         }
     }
 
     @Test
-    void ping() throws Exception{
+    void ping() throws Exception {
         assertTrue(bc.checkLiveness());
     }
 
@@ -65,7 +66,7 @@ public class ByzCoinRPCTest {
     }
 
     @Test
-    void spawnDarc() throws Exception{
+    void spawnDarc() throws Exception {
         DarcInstance dc = new DarcInstance(bc, genesisDarc);
         Darc darc2 = genesisDarc.copy();
         darc2.setRule("spawn:darc", admin.getIdentity().toString().getBytes());
@@ -87,7 +88,7 @@ public class ByzCoinRPCTest {
     }
 
     @Test
-    void spawnValue() throws Exception{
+    void spawnValue() throws Exception {
         DarcInstance dc = new DarcInstance(bc, genesisDarc);
         Darc darc2 = genesisDarc.copy();
         darc2.setRule("spawn:value", admin.getIdentity().toString().getBytes());
@@ -106,7 +107,7 @@ public class ByzCoinRPCTest {
     }
 
     @Test
-    void failToSpawnValue() throws Exception{
+    void failToSpawnValue() throws Exception {
         // In this test we send through a transaction we know is going to fail
         // in order to verify that the txid shows up in the refused transactions
         // list in the next block. We then use spawnContractAndWait on one we know is
@@ -180,5 +181,64 @@ public class ByzCoinRPCTest {
         assertEquals(ByzCoinRPCTest.bc.getLatestBlock().getTimestampNano(), bc.getLatestBlock().getTimestampNano());
         assertEquals(ByzCoinRPCTest.bc.getGenesisDarc().getBaseId(), bc.getGenesisDarc().getBaseId());
 
+    }
+
+    int blocks = 0;
+
+    /**
+     * Subscribes to new blocks and verifies it gets them.
+     *
+     * @throws Exception
+     */
+    @Test
+    void subscribeBlocks() throws Exception {
+        assertEquals(0, blocks);
+        bc.subscribeBlock(bs -> receiveBlock(bs));
+        // Wait for two possible blocks
+        Thread.sleep(2 * bc.getConfig().getBlockInterval().toMillis());
+        assertEquals(0, blocks);
+
+        // Update the darc and thus create some blocks
+        updateDarc();
+        Thread.sleep(2 * bc.getConfig().getBlockInterval().toMillis());
+        assertNotEquals(0, blocks);
+    }
+
+    private void receiveBlock(List<Block> bs) {
+        logger.info("got blocks {}", bs);
+        blocks++;
+    }
+
+    List<ClientTransaction> allCtxs = new ArrayList<>();
+
+    /**
+     * Subscribes to new blocks and verifies it gets them.
+     *
+     * @throws Exception
+     */
+    @Test
+    void subscribeClientTransactions() throws Exception {
+        assertEquals(0, allCtxs.size());
+        bc.subscribeClientTransaction(ctxs -> receiveClientTransactions(ctxs));
+        // Wait for two possible blocks and make sure we don't get any transactions
+        Thread.sleep(2 * bc.getConfig().getBlockInterval().toMillis());
+        assertEquals(0, allCtxs.size());
+
+        // Update the darc and thus create at least one block with at least the interesting clientTransaction
+        DarcInstance dc = new DarcInstance(bc, genesisDarc);
+        Darc newDarc = genesisDarc.copy();
+        newDarc.setRule("spawn:darc", "all".getBytes());
+        Instruction instr = dc.evolveDarcInstruction(newDarc, admin, 0, 1);
+        ClientTransactionId ctxid = bc.sendTransaction(new ClientTransaction(Arrays.asList(instr)));
+
+        Thread.sleep(2 * bc.getConfig().getBlockInterval().toMillis());
+        assertNotEquals(0, allCtxs.size());
+        assertEquals(1, allCtxs.stream().filter(ctx ->
+                ctx.getId().equals(ctxid)).count());
+    }
+
+    private void receiveClientTransactions(List<ClientTransaction> ctxs) {
+        logger.info("got ClientTranaction {}", ctxs);
+        allCtxs.addAll(ctxs);
     }
 }
