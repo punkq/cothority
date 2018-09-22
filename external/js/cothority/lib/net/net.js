@@ -70,7 +70,7 @@ function Socket(addr, service) {
         }
         const message = requestModel.create(data);
         const marshal = requestModel.encode(message).finish();
-        ws.send(marshal);
+        ws.send(marshal.slice());
       };
 
       ws.onmessage = event => {
