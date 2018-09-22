@@ -280,6 +280,7 @@ func (s *Service) GetProof(req *GetProof) (resp *GetProofResponse, err error) {
 		return nil, errors.New("version mismatch")
 	}
 	log.Lvlf2("%s Getting proof for key %x on sc %x", s.ServerIdentity(), req.Key, req.ID)
+	defer log.Lvl1("Returned")
 	latest, err := s.db().GetLatestByID(req.ID)
 	if err != nil && latest == nil {
 		return

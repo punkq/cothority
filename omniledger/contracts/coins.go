@@ -77,6 +77,7 @@ func ContractCoin(cdb ol.CollectionView, inst ol.Instruction, c []ol.Coin) (sc [
 	case ol.InvokeType:
 		// Invoke is one of "mint", "transfer", "fetch", or "store".
 		var coinsArg uint64
+		log.Print("command is:", inst.Invoke.Command)
 
 		if inst.Invoke.Command != "store" {
 			coinsBuf := inst.Invoke.Args.Search("coins")
@@ -102,7 +103,7 @@ func ContractCoin(cdb ol.CollectionView, inst ol.Instruction, c []ol.Coin) (sc [
 				did darc.ID
 			)
 
-			cdb.LogLeaderf("transferring %d to %x", coinsArg, target)
+			cdb.LogLeaderf("transferring %d from %s to %x", coinsArg, inst.InstanceID, target)
 
 			v, cid, did, err = cdb.GetValues(target)
 			if err == nil && cid != ContractCoinID {
@@ -162,6 +163,7 @@ func ContractCoin(cdb ol.CollectionView, inst ol.Instruction, c []ol.Coin) (sc [
 		}
 		// Finally update the coin value.
 		var ciBuf []byte
+		log.Printf("Updating %x with %+v", inst.InstanceID, ci)
 		ciBuf, err = protobuf.Encode(&ci)
 		sc = append(sc, ol.NewStateChange(ol.Update, inst.InstanceID,
 			ContractCoinID, ciBuf, darcID))

@@ -112,7 +112,7 @@ func (s *Service) AnswerQuestionnaire(aq *AnswerQuestionnaire) (*StringReply, er
 	}
 	q.Balance -= q.Reward
 	r.Users = append(r.Users, aq.Account)
-	// TODO: send reard to account
+	// TODO: send reward to account
 
 	return &StringReply{}, s.save()
 }
@@ -263,7 +263,7 @@ func newService(c *onet.Context) (onet.Service, error) {
 		log.Error(err)
 		return nil, err
 	}
-	if len(s.storage.Messages) == 0 {
+	if len(s.storage.Messages) == 0 || true {
 		s.storage.Messages = make(map[string]*Message)
 	}
 	if len(s.storage.Questionnaires) == 0 {

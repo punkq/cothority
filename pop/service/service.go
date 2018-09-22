@@ -182,25 +182,33 @@ func (s *Service) VerifyLink(req *VerifyLink) (*VerifyLinkReply, error) {
 
 // StoreConfig saves the pop-config locally
 func (s *Service) StoreConfig(req *StoreConfig) (network.Message, error) {
-	log.Lvlf2("StoreConfig: %s %v %x", s.Context.ServerIdentity(), req.Desc, req.Desc.Hash())
+	log.LLvlf2("StoreConfig: %s %v %x", s.Context.ServerIdentity(), req.Desc, req.Desc.Hash())
 	if req.Desc.Roster == nil {
+		log.Print()
 		return nil, errors.New("no roster set")
 	}
 	if i, _ := req.Desc.Roster.Search(s.ServerIdentity().ID); i < 0 {
+		log.Print()
 		return nil, errors.New("this node is not in the roster")
 	}
 	if s.data.Public == nil {
+		log.Print()
 		return nil, errors.New("Not linked yet")
 	}
 	hash := req.Desc.Hash()
+	log.Printf("Hash is: %x", hash)
+	log.Print("Pubkey is:", s.data.Public)
 	if err := schnorr.Verify(s.Suite(), s.data.Public, hash, req.Signature); err != nil {
+		log.Print()
 		return nil, errors.New("Invalid signature" + err.Error())
 	}
+		log.Print()
 	s.data.Finals[string(hash)] = &FinalStatement{Desc: req.Desc, Signature: []byte{}}
 	s.syncs[string(hash)] = &syncChans{
 		ccChannel: make(chan *CheckConfigReply, 1),
 		mcChannel: make(chan *MergeConfigReply, 1),
 	}
+		log.Print()
 	if len(req.Desc.Parties) > 0 {
 		meta := newMerge()
 		s.data.merges[string(hash)] = meta
@@ -212,7 +220,7 @@ func (s *Service) StoreConfig(req *StoreConfig) (network.Message, error) {
 	// And send the proposed config to all other nodes, so that an eventual client
 	// can fetch it from there.
 	if req.Desc.Roster.List[0].Equal(s.ServerIdentity()) {
-		log.Lvl2(s.ServerIdentity(), "sending configuration to other nodes")
+		log.LLvl2(s.ServerIdentity(), "sending configuration to other nodes")
 		replies, err := s.propagateDescription(req.Desc.Roster, req.Desc, 10*time.Second)
 		if err != nil {
 			return nil, err
@@ -223,25 +231,26 @@ func (s *Service) StoreConfig(req *StoreConfig) (network.Message, error) {
 	} else {
 		// Search if the given configuration is stored in the proposition, so that
 		// it can be deleted.
-		index := -1
-		for i, cfg := range s.proposedDescription {
-			if bytes.Compare(cfg.Hash(), hash) == 0 {
-				index = i
-			}
-		}
-		log.Lvl2("Deleting stored proposition")
-		if index >= 0 {
-			s.proposedDescription = append(s.proposedDescription[0:index],
-				s.proposedDescription[index+1:]...)
-		}
+		//index := -1
+		//for i, cfg := range s.proposedDescription {
+		//	if bytes.Compare(cfg.Hash(), hash) == 0 {
+		//		index = i
+		//	}
+		//}
+		//log.Lvl2("Deleting stored proposition")
+		//if index >= 0 {
+		//	s.proposedDescription = append(s.proposedDescription[0:index],
+		//		s.proposedDescription[index+1:]...)
+		//}
 	}
+		log.Print()
 	return &StoreConfigReply{hash}, nil
 }
 
 // GetProposals returns all collected proposals so far.
 func (s *Service) GetProposals(req *GetProposals) (*GetProposalsReply, error) {
 	tmp := s.proposedDescription
-	s.proposedDescription = make([]PopDesc, 0)
+	//s.proposedDescription = make([]PopDesc, 0)
 	log.Lvlf2("Sending proposals: %+v", tmp)
 	return &GetProposalsReply{
 		Proposals: tmp,
@@ -260,6 +269,7 @@ func (s *Service) FinalizeRequest(req *FinalizeRequest) (*FinalizeResponse, erro
 	if err != nil {
 		return nil, err
 	}
+	log.Print("Using public key for verification:", s.data.Public)
 	if err := schnorr.Verify(s.Suite(), s.data.Public, hash, req.Signature); err != nil {
 		return nil, errors.New("Invalid signature:" + err.Error())
 	}
@@ -433,6 +443,7 @@ func (s *Service) GetFinalStatements(req *GetFinalStatements) (*GetFinalStatemen
 // StoreKeys stores the given keys in the service to be retrieved by the users.
 func (s *Service) StoreKeys(req *StoreKeys) (*StoreKeysReply, error) {
 	// TODO: verify signature
+	log.Print(s.ServerIdentity(), "Keys are:", req.Keys)
 	s.storedKeys[string(req.ID)] = &keyList{req.Keys}
 	return &StoreKeysReply{}, nil
 }
@@ -440,6 +451,7 @@ func (s *Service) StoreKeys(req *StoreKeys) (*StoreKeysReply, error) {
 // GetKeys will return the keys stored for that party.
 func (s *Service) GetKeys(req *GetKeys) (*GetKeysReply, error) {
 	ks := s.storedKeys[string(req.ID)]
+	log.Print(s.ServerIdentity(), "Keys are:", ks)
 	if ks == nil {
 		return nil, errors.New("no keys stored for this party")
 	}
@@ -1149,6 +1161,7 @@ func newService(c *onet.Context) (onet.Service, error) {
 	if err := s.tryLoad(); err != nil {
 		return nil, err
 	}
+	log.Print(s.ServerIdentity(), s.data.Public)
 	if s.data.Finals == nil {
 		s.data.Finals = make(map[string]*FinalStatement)
 	}
