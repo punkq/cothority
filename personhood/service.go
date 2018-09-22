@@ -267,7 +267,7 @@ func newService(c *onet.Context) (onet.Service, error) {
 		log.Error(err)
 		return nil, err
 	}
-	if len(s.storage.Messages) == 0 || true {
+	if len(s.storage.Messages) == 0 || false {
 		s.storage.Messages = make(map[string]*Message)
 	}
 	if len(s.storage.Questionnaires) == 0 {
