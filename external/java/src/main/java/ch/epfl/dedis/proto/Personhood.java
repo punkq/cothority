@@ -8751,6 +8751,23 @@ public final class Personhood {
      * <code>required bytes id = 7;</code>
      */
     com.google.protobuf.ByteString getId();
+
+    /**
+     * <pre>
+     * PartyIID - the instance ID of the party this message belongs to
+     * </pre>
+     *
+     * <code>required bytes partyiid = 8;</code>
+     */
+    boolean hasPartyiid();
+    /**
+     * <pre>
+     * PartyIID - the instance ID of the party this message belongs to
+     * </pre>
+     *
+     * <code>required bytes partyiid = 8;</code>
+     */
+    com.google.protobuf.ByteString getPartyiid();
   }
   /**
    * <pre>
@@ -8776,6 +8793,7 @@ public final class Personhood {
       balance_ = 0L;
       reward_ = 0L;
       id_ = com.google.protobuf.ByteString.EMPTY;
+      partyiid_ = com.google.protobuf.ByteString.EMPTY;
     }
 
     @java.lang.Override
@@ -8841,6 +8859,11 @@ public final class Personhood {
             case 58: {
               bitField0_ |= 0x00000040;
               id_ = input.readBytes();
+              break;
+            }
+            case 66: {
+              bitField0_ |= 0x00000080;
+              partyiid_ = input.readBytes();
               break;
             }
           }
@@ -9094,6 +9117,29 @@ public final class Personhood {
       return id_;
     }
 
+    public static final int PARTYIID_FIELD_NUMBER = 8;
+    private com.google.protobuf.ByteString partyiid_;
+    /**
+     * <pre>
+     * PartyIID - the instance ID of the party this message belongs to
+     * </pre>
+     *
+     * <code>required bytes partyiid = 8;</code>
+     */
+    public boolean hasPartyiid() {
+      return ((bitField0_ & 0x00000080) == 0x00000080);
+    }
+    /**
+     * <pre>
+     * PartyIID - the instance ID of the party this message belongs to
+     * </pre>
+     *
+     * <code>required bytes partyiid = 8;</code>
+     */
+    public com.google.protobuf.ByteString getPartyiid() {
+      return partyiid_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -9128,6 +9174,10 @@ public final class Personhood {
         memoizedIsInitialized = 0;
         return false;
       }
+      if (!hasPartyiid()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -9154,6 +9204,9 @@ public final class Personhood {
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         output.writeBytes(7, id_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        output.writeBytes(8, partyiid_);
       }
       unknownFields.writeTo(output);
     }
@@ -9188,6 +9241,10 @@ public final class Personhood {
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(7, id_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(8, partyiid_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -9240,6 +9297,11 @@ public final class Personhood {
         result = result && getId()
             .equals(other.getId());
       }
+      result = result && (hasPartyiid() == other.hasPartyiid());
+      if (hasPartyiid()) {
+        result = result && getPartyiid()
+            .equals(other.getPartyiid());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -9281,6 +9343,10 @@ public final class Personhood {
       if (hasId()) {
         hash = (37 * hash) + ID_FIELD_NUMBER;
         hash = (53 * hash) + getId().hashCode();
+      }
+      if (hasPartyiid()) {
+        hash = (37 * hash) + PARTYIID_FIELD_NUMBER;
+        hash = (53 * hash) + getPartyiid().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -9429,6 +9495,8 @@ public final class Personhood {
         bitField0_ = (bitField0_ & ~0x00000020);
         id_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000040);
+        partyiid_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000080);
         return this;
       }
 
@@ -9481,6 +9549,10 @@ public final class Personhood {
           to_bitField0_ |= 0x00000040;
         }
         result.id_ = id_;
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+          to_bitField0_ |= 0x00000080;
+        }
+        result.partyiid_ = partyiid_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -9548,6 +9620,9 @@ public final class Personhood {
         if (other.hasId()) {
           setId(other.getId());
         }
+        if (other.hasPartyiid()) {
+          setPartyiid(other.getPartyiid());
+        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -9573,6 +9648,9 @@ public final class Personhood {
           return false;
         }
         if (!hasId()) {
+          return false;
+        }
+        if (!hasPartyiid()) {
           return false;
         }
         return true;
@@ -10045,6 +10123,57 @@ public final class Personhood {
       public Builder clearId() {
         bitField0_ = (bitField0_ & ~0x00000040);
         id_ = getDefaultInstance().getId();
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.ByteString partyiid_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <pre>
+       * PartyIID - the instance ID of the party this message belongs to
+       * </pre>
+       *
+       * <code>required bytes partyiid = 8;</code>
+       */
+      public boolean hasPartyiid() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <pre>
+       * PartyIID - the instance ID of the party this message belongs to
+       * </pre>
+       *
+       * <code>required bytes partyiid = 8;</code>
+       */
+      public com.google.protobuf.ByteString getPartyiid() {
+        return partyiid_;
+      }
+      /**
+       * <pre>
+       * PartyIID - the instance ID of the party this message belongs to
+       * </pre>
+       *
+       * <code>required bytes partyiid = 8;</code>
+       */
+      public Builder setPartyiid(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000080;
+        partyiid_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * PartyIID - the instance ID of the party this message belongs to
+       * </pre>
+       *
+       * <code>required bytes partyiid = 8;</code>
+       */
+      public Builder clearPartyiid() {
+        bitField0_ = (bitField0_ & ~0x00000080);
+        partyiid_ = getDefaultInstance().getPartyiid();
         onChanged();
         return this;
       }
@@ -10805,6 +10934,23 @@ public final class Personhood {
      * <code>required sint32 number = 2;</code>
      */
     int getNumber();
+
+    /**
+     * <pre>
+     * ReaderId of the reading account, to skip messages created by this reader
+     * </pre>
+     *
+     * <code>required bytes readerid = 3;</code>
+     */
+    boolean hasReaderid();
+    /**
+     * <pre>
+     * ReaderId of the reading account, to skip messages created by this reader
+     * </pre>
+     *
+     * <code>required bytes readerid = 3;</code>
+     */
+    com.google.protobuf.ByteString getReaderid();
   }
   /**
    * <pre>
@@ -10826,6 +10972,7 @@ public final class Personhood {
     private ListMessages() {
       start_ = 0;
       number_ = 0;
+      readerid_ = com.google.protobuf.ByteString.EMPTY;
     }
 
     @java.lang.Override
@@ -10864,6 +11011,11 @@ public final class Personhood {
             case 16: {
               bitField0_ |= 0x00000002;
               number_ = input.readSInt32();
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              readerid_ = input.readBytes();
               break;
             }
           }
@@ -10937,6 +11089,29 @@ public final class Personhood {
       return number_;
     }
 
+    public static final int READERID_FIELD_NUMBER = 3;
+    private com.google.protobuf.ByteString readerid_;
+    /**
+     * <pre>
+     * ReaderId of the reading account, to skip messages created by this reader
+     * </pre>
+     *
+     * <code>required bytes readerid = 3;</code>
+     */
+    public boolean hasReaderid() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <pre>
+     * ReaderId of the reading account, to skip messages created by this reader
+     * </pre>
+     *
+     * <code>required bytes readerid = 3;</code>
+     */
+    public com.google.protobuf.ByteString getReaderid() {
+      return readerid_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -10951,6 +11126,10 @@ public final class Personhood {
         memoizedIsInitialized = 0;
         return false;
       }
+      if (!hasReaderid()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -10962,6 +11141,9 @@ public final class Personhood {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeSInt32(2, number_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, readerid_);
       }
       unknownFields.writeTo(output);
     }
@@ -10978,6 +11160,10 @@ public final class Personhood {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeSInt32Size(2, number_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, readerid_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -11005,6 +11191,11 @@ public final class Personhood {
         result = result && (getNumber()
             == other.getNumber());
       }
+      result = result && (hasReaderid() == other.hasReaderid());
+      if (hasReaderid()) {
+        result = result && getReaderid()
+            .equals(other.getReaderid());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -11023,6 +11214,10 @@ public final class Personhood {
       if (hasNumber()) {
         hash = (37 * hash) + NUMBER_FIELD_NUMBER;
         hash = (53 * hash) + getNumber();
+      }
+      if (hasReaderid()) {
+        hash = (37 * hash) + READERID_FIELD_NUMBER;
+        hash = (53 * hash) + getReaderid().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -11162,6 +11357,8 @@ public final class Personhood {
         bitField0_ = (bitField0_ & ~0x00000001);
         number_ = 0;
         bitField0_ = (bitField0_ & ~0x00000002);
+        readerid_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -11194,6 +11391,10 @@ public final class Personhood {
           to_bitField0_ |= 0x00000002;
         }
         result.number_ = number_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.readerid_ = readerid_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -11242,6 +11443,9 @@ public final class Personhood {
         if (other.hasNumber()) {
           setNumber(other.getNumber());
         }
+        if (other.hasReaderid()) {
+          setReaderid(other.getReaderid());
+        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -11252,6 +11456,9 @@ public final class Personhood {
           return false;
         }
         if (!hasNumber()) {
+          return false;
+        }
+        if (!hasReaderid()) {
           return false;
         }
         return true;
@@ -11368,6 +11575,57 @@ public final class Personhood {
       public Builder clearNumber() {
         bitField0_ = (bitField0_ & ~0x00000002);
         number_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.ByteString readerid_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <pre>
+       * ReaderId of the reading account, to skip messages created by this reader
+       * </pre>
+       *
+       * <code>required bytes readerid = 3;</code>
+       */
+      public boolean hasReaderid() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <pre>
+       * ReaderId of the reading account, to skip messages created by this reader
+       * </pre>
+       *
+       * <code>required bytes readerid = 3;</code>
+       */
+      public com.google.protobuf.ByteString getReaderid() {
+        return readerid_;
+      }
+      /**
+       * <pre>
+       * ReaderId of the reading account, to skip messages created by this reader
+       * </pre>
+       *
+       * <code>required bytes readerid = 3;</code>
+       */
+      public Builder setReaderid(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        readerid_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * ReaderId of the reading account, to skip messages created by this reader
+       * </pre>
+       *
+       * <code>required bytes readerid = 3;</code>
+       */
+      public Builder clearReaderid() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        readerid_ = getDefaultInstance().getReaderid();
         onChanged();
         return this;
       }
@@ -14928,19 +15186,20 @@ public final class Personhood {
       "\023AnswerQuestionnaire\022\017\n\007questid\030\001 \002(\014\022\017\n" +
       "\007replies\030\002 \003(\021\022\017\n\007account\030\003 \002(\014\"4\n\022Topup" +
       "Questionnaire\022\017\n\007questid\030\001 \002(\014\022\r\n\005topup\030" +
-      "\002 \002(\004\"s\n\007Message\022\017\n\007subject\030\001 \002(\t\022\014\n\004dat",
-      "e\030\002 \002(\004\022\014\n\004text\030\003 \002(\t\022\016\n\006author\030\004 \002(\014\022\017\n" +
-      "\007balance\030\005 \002(\004\022\016\n\006reward\030\006 \002(\004\022\n\n\002id\030\007 \002" +
-      "(\014\"3\n\013SendMessage\022$\n\007message\030\001 \002(\0132\023.per" +
-      "sonhood.Message\"-\n\014ListMessages\022\r\n\005start" +
-      "\030\001 \002(\021\022\016\n\006number\030\002 \002(\021\"X\n\021ListMessagesRe" +
-      "ply\022\020\n\010subjects\030\001 \003(\t\022\016\n\006msgids\030\002 \003(\014\022\020\n" +
-      "\010balances\030\003 \003(\004\022\017\n\007rewards\030\004 \003(\004\">\n\013Read" +
-      "Message\022\r\n\005msgid\030\001 \002(\014\022\020\n\010partyiid\030\002 \002(\014" +
-      "\022\016\n\006reader\030\003 \002(\014\"8\n\020ReadMessageReply\022$\n\007" +
-      "message\030\001 \002(\0132\023.personhood.Message\"-\n\014To",
-      "pupMessage\022\r\n\005msgid\030\001 \002(\014\022\016\n\006amount\030\002 \002(" +
-      "\004B!\n\023ch.epfl.dedis.protoB\nPersonhood"
+      "\002 \002(\004\"\205\001\n\007Message\022\017\n\007subject\030\001 \002(\t\022\014\n\004da",
+      "te\030\002 \002(\004\022\014\n\004text\030\003 \002(\t\022\016\n\006author\030\004 \002(\014\022\017" +
+      "\n\007balance\030\005 \002(\004\022\016\n\006reward\030\006 \002(\004\022\n\n\002id\030\007 " +
+      "\002(\014\022\020\n\010partyiid\030\010 \002(\014\"3\n\013SendMessage\022$\n\007" +
+      "message\030\001 \002(\0132\023.personhood.Message\"?\n\014Li" +
+      "stMessages\022\r\n\005start\030\001 \002(\021\022\016\n\006number\030\002 \002(" +
+      "\021\022\020\n\010readerid\030\003 \002(\014\"X\n\021ListMessagesReply" +
+      "\022\020\n\010subjects\030\001 \003(\t\022\016\n\006msgids\030\002 \003(\014\022\020\n\010ba" +
+      "lances\030\003 \003(\004\022\017\n\007rewards\030\004 \003(\004\">\n\013ReadMes" +
+      "sage\022\r\n\005msgid\030\001 \002(\014\022\020\n\010partyiid\030\002 \002(\014\022\016\n" +
+      "\006reader\030\003 \002(\014\"8\n\020ReadMessageReply\022$\n\007mes",
+      "sage\030\001 \002(\0132\023.personhood.Message\"-\n\014Topup" +
+      "Message\022\r\n\005msgid\030\001 \002(\014\022\016\n\006amount\030\002 \002(\004B!" +
+      "\n\023ch.epfl.dedis.protoB\nPersonhood"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -15021,7 +15280,7 @@ public final class Personhood {
     internal_static_personhood_Message_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_personhood_Message_descriptor,
-        new java.lang.String[] { "Subject", "Date", "Text", "Author", "Balance", "Reward", "Id", });
+        new java.lang.String[] { "Subject", "Date", "Text", "Author", "Balance", "Reward", "Id", "Partyiid", });
     internal_static_personhood_SendMessage_descriptor =
       getDescriptor().getMessageTypes().get(11);
     internal_static_personhood_SendMessage_fieldAccessorTable = new
@@ -15033,7 +15292,7 @@ public final class Personhood {
     internal_static_personhood_ListMessages_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_personhood_ListMessages_descriptor,
-        new java.lang.String[] { "Start", "Number", });
+        new java.lang.String[] { "Start", "Number", "Readerid", });
     internal_static_personhood_ListMessagesReply_descriptor =
       getDescriptor().getMessageTypes().get(13);
     internal_static_personhood_ListMessagesReply_fieldAccessorTable = new

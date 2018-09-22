@@ -52,7 +52,8 @@ type storage1 struct {
 	Read           map[string]*readMsg
 	Questionnaires map[string]*Questionnaire
 	Replies        map[string]*Reply
-	Parties        map[string]*Party
+	// mapped by the instanceID of the party
+	Parties map[string]*Party
 
 	sync.Mutex
 }

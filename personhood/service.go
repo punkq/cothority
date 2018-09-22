@@ -146,10 +146,13 @@ func (s *Service) ListMessages(lm *ListMessages) (*ListMessagesReply, error) {
 	log.Lvl2(s.ServerIdentity(), lm)
 	var mreply []Message
 	for _, q := range s.storage.Messages {
-		mreply = append(mreply, *q)
+		if !q.Author.Equal(lm.ReaderId) &&
+			q.Balance >= q.Reward {
+			mreply = append(mreply, *q)
+		}
 	}
 	sort.Slice(mreply, func(i, j int) bool {
-		return mreply[i].Balance > mreply[j].Balance
+		return mreply[i].score() > mreply[j].score()
 	})
 	if len(mreply) < lm.Start {
 		return &ListMessagesReply{}, nil
@@ -170,6 +173,7 @@ func (s *Service) ListMessages(lm *ListMessages) (*ListMessagesReply, error) {
 		lmr.Subjects = append(lmr.Subjects, msg.Subject)
 		lmr.Balances = append(lmr.Balances, msg.Balance)
 		lmr.Rewards = append(lmr.Rewards, msg.Reward)
+		lmr.PartyIIDs = append(lmr.PartyIIDs, msg.PartyIID)
 	}
 	return lmr, nil
 }

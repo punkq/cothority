@@ -137,6 +137,8 @@ type Message struct {
 	Reward uint64
 	// ID of the messgae - should be random.
 	ID []byte
+	// PartyIID - the instance ID of the party this message belongs to
+	PartyIID ol.InstanceID
 }
 
 // SendMessage stores the message in the system.
@@ -152,6 +154,8 @@ type ListMessages struct {
 	Start int
 	// Number of maximum messages returned
 	Number int
+	// ReaderId of the reading account, to skip messages created by this reader
+	ReaderId ol.InstanceID
 }
 
 // ListMessagesReply returns the subjects, IDs, balances and rewards of the top
@@ -165,6 +169,8 @@ type ListMessagesReply struct {
 	Balances []uint64
 	// Rewards
 	Rewards []uint64
+	// PartyIIDs
+	PartyIIDs []ol.InstanceID
 }
 
 // ReadMessage requests the full message and the reward for that message.
