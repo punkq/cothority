@@ -156,6 +156,8 @@ message ListMessagesReply {
   repeated uint64 balances = 3;
   // Rewards
   repeated uint64 rewards = 4;
+  // PartyIIDs
+  repeated bytes partyiids = 5;
 }
 
 // ReadMessage requests the full message and the reward for that message.
@@ -172,6 +174,9 @@ message ReadMessage {
 message ReadMessageReply {
   // Messsage to read.
   required Message message = 1;
+  // Rewarded is true if this is the first time the message has been read
+  // by this reader.
+  required bool rewarded = 2;
 }
 
 // TopupMessage to fill up the balance of a message

@@ -187,6 +187,9 @@ type ReadMessage struct {
 type ReadMessageReply struct {
 	// Messsage to read.
 	Message Message
+	// Rewarded is true if this is the first time the message has been read
+	// by this reader.
+	Rewarded bool
 }
 
 // TopupMessage to fill up the balance of a message

@@ -135,7 +135,7 @@ func (s *Service) SendMessage(sm *SendMessage) (*StringReply, error) {
 		return nil, errors.New("this message-ID already exists")
 	}
 	s.storage.Messages[idStr] = &sm.Message
-	s.storage.Read[idStr] = &readMsg{}
+	s.storage.Read[idStr] = &readMsg{[]ol.InstanceID{sm.Message.Author}}
 
 	return &StringReply{}, s.save()
 }
@@ -146,8 +146,12 @@ func (s *Service) ListMessages(lm *ListMessages) (*ListMessagesReply, error) {
 	log.Lvl2(s.ServerIdentity(), lm)
 	var mreply []Message
 	for _, q := range s.storage.Messages {
-		if !q.Author.Equal(lm.ReaderId) &&
-			q.Balance >= q.Reward {
+		for _, r := range s.storage.Read[string(q.ID)].Readers {
+			if r.Equal(lm.ReaderId) {
+				continue
+			}
+		}
+		if q.Balance >= q.Reward {
 			mreply = append(mreply, *q)
 		}
 	}
@@ -192,13 +196,14 @@ func (s *Service) ReadMessage(rm *ReadMessage) (*ReadMessageReply, error) {
 	if party == nil {
 		return nil, errors.New("no such partyIID")
 	}
-	if msg.Balance < msg.Reward {
-		return &ReadMessageReply{*msg}, nil
+	if msg.Balance < msg.Reward ||
+		msg.Author.Equal(rm.Reader) {
+		return &ReadMessageReply{*msg, false}, nil
 	}
 	read := s.storage.Read[string(msg.ID)]
 	for _, reader := range read.Readers {
 		if reader.Equal(rm.Reader) {
-			return &ReadMessageReply{*msg}, nil
+			return &ReadMessageReply{*msg, false}, nil
 		}
 	}
 	msg.Balance -= msg.Reward
@@ -241,7 +246,7 @@ func (s *Service) ReadMessage(rm *ReadMessage) (*ReadMessageReply, error) {
 		return nil, errors.New("couldn't send reward: " + err.Error())
 	}
 
-	return &ReadMessageReply{*msg}, s.save()
+	return &ReadMessageReply{*msg, true}, s.save()
 }
 
 // TopupMessage to fill up the balance of a message

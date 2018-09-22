@@ -11791,6 +11791,31 @@ public final class Personhood {
      * <code>repeated uint64 rewards = 4;</code>
      */
     long getRewards(int index);
+
+    /**
+     * <pre>
+     * PartyIIDs
+     * </pre>
+     *
+     * <code>repeated bytes partyiids = 5;</code>
+     */
+    java.util.List<com.google.protobuf.ByteString> getPartyiidsList();
+    /**
+     * <pre>
+     * PartyIIDs
+     * </pre>
+     *
+     * <code>repeated bytes partyiids = 5;</code>
+     */
+    int getPartyiidsCount();
+    /**
+     * <pre>
+     * PartyIIDs
+     * </pre>
+     *
+     * <code>repeated bytes partyiids = 5;</code>
+     */
+    com.google.protobuf.ByteString getPartyiids(int index);
   }
   /**
    * <pre>
@@ -11814,6 +11839,7 @@ public final class Personhood {
       msgids_ = java.util.Collections.emptyList();
       balances_ = java.util.Collections.emptyList();
       rewards_ = java.util.Collections.emptyList();
+      partyiids_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -11903,6 +11929,14 @@ public final class Personhood {
               input.popLimit(limit);
               break;
             }
+            case 42: {
+              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+                partyiids_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
+                mutable_bitField0_ |= 0x00000010;
+              }
+              partyiids_.add(input.readBytes());
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -11922,6 +11956,9 @@ public final class Personhood {
         }
         if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
           rewards_ = java.util.Collections.unmodifiableList(rewards_);
+        }
+        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+          partyiids_ = java.util.Collections.unmodifiableList(partyiids_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -12086,6 +12123,40 @@ public final class Personhood {
       return rewards_.get(index);
     }
 
+    public static final int PARTYIIDS_FIELD_NUMBER = 5;
+    private java.util.List<com.google.protobuf.ByteString> partyiids_;
+    /**
+     * <pre>
+     * PartyIIDs
+     * </pre>
+     *
+     * <code>repeated bytes partyiids = 5;</code>
+     */
+    public java.util.List<com.google.protobuf.ByteString>
+        getPartyiidsList() {
+      return partyiids_;
+    }
+    /**
+     * <pre>
+     * PartyIIDs
+     * </pre>
+     *
+     * <code>repeated bytes partyiids = 5;</code>
+     */
+    public int getPartyiidsCount() {
+      return partyiids_.size();
+    }
+    /**
+     * <pre>
+     * PartyIIDs
+     * </pre>
+     *
+     * <code>repeated bytes partyiids = 5;</code>
+     */
+    public com.google.protobuf.ByteString getPartyiids(int index) {
+      return partyiids_.get(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -12109,6 +12180,9 @@ public final class Personhood {
       }
       for (int i = 0; i < rewards_.size(); i++) {
         output.writeUInt64(4, rewards_.get(i));
+      }
+      for (int i = 0; i < partyiids_.size(); i++) {
+        output.writeBytes(5, partyiids_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -12153,6 +12227,15 @@ public final class Personhood {
         size += dataSize;
         size += 1 * getRewardsList().size();
       }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < partyiids_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(partyiids_.get(i));
+        }
+        size += dataSize;
+        size += 1 * getPartyiidsList().size();
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -12177,6 +12260,8 @@ public final class Personhood {
           .equals(other.getBalancesList());
       result = result && getRewardsList()
           .equals(other.getRewardsList());
+      result = result && getPartyiidsList()
+          .equals(other.getPartyiidsList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -12203,6 +12288,10 @@ public final class Personhood {
       if (getRewardsCount() > 0) {
         hash = (37 * hash) + REWARDS_FIELD_NUMBER;
         hash = (53 * hash) + getRewardsList().hashCode();
+      }
+      if (getPartyiidsCount() > 0) {
+        hash = (37 * hash) + PARTYIIDS_FIELD_NUMBER;
+        hash = (53 * hash) + getPartyiidsList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -12346,6 +12435,8 @@ public final class Personhood {
         bitField0_ = (bitField0_ & ~0x00000004);
         rewards_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000008);
+        partyiids_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -12389,6 +12480,11 @@ public final class Personhood {
           bitField0_ = (bitField0_ & ~0x00000008);
         }
         result.rewards_ = rewards_;
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          partyiids_ = java.util.Collections.unmodifiableList(partyiids_);
+          bitField0_ = (bitField0_ & ~0x00000010);
+        }
+        result.partyiids_ = partyiids_;
         onBuilt();
         return result;
       }
@@ -12467,6 +12563,16 @@ public final class Personhood {
           } else {
             ensureRewardsIsMutable();
             rewards_.addAll(other.rewards_);
+          }
+          onChanged();
+        }
+        if (!other.partyiids_.isEmpty()) {
+          if (partyiids_.isEmpty()) {
+            partyiids_ = other.partyiids_;
+            bitField0_ = (bitField0_ & ~0x00000010);
+          } else {
+            ensurePartyiidsIsMutable();
+            partyiids_.addAll(other.partyiids_);
           }
           onChanged();
         }
@@ -12911,6 +13017,106 @@ public final class Personhood {
       public Builder clearRewards() {
         rewards_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000008);
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<com.google.protobuf.ByteString> partyiids_ = java.util.Collections.emptyList();
+      private void ensurePartyiidsIsMutable() {
+        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+          partyiids_ = new java.util.ArrayList<com.google.protobuf.ByteString>(partyiids_);
+          bitField0_ |= 0x00000010;
+         }
+      }
+      /**
+       * <pre>
+       * PartyIIDs
+       * </pre>
+       *
+       * <code>repeated bytes partyiids = 5;</code>
+       */
+      public java.util.List<com.google.protobuf.ByteString>
+          getPartyiidsList() {
+        return java.util.Collections.unmodifiableList(partyiids_);
+      }
+      /**
+       * <pre>
+       * PartyIIDs
+       * </pre>
+       *
+       * <code>repeated bytes partyiids = 5;</code>
+       */
+      public int getPartyiidsCount() {
+        return partyiids_.size();
+      }
+      /**
+       * <pre>
+       * PartyIIDs
+       * </pre>
+       *
+       * <code>repeated bytes partyiids = 5;</code>
+       */
+      public com.google.protobuf.ByteString getPartyiids(int index) {
+        return partyiids_.get(index);
+      }
+      /**
+       * <pre>
+       * PartyIIDs
+       * </pre>
+       *
+       * <code>repeated bytes partyiids = 5;</code>
+       */
+      public Builder setPartyiids(
+          int index, com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensurePartyiidsIsMutable();
+        partyiids_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * PartyIIDs
+       * </pre>
+       *
+       * <code>repeated bytes partyiids = 5;</code>
+       */
+      public Builder addPartyiids(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensurePartyiidsIsMutable();
+        partyiids_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * PartyIIDs
+       * </pre>
+       *
+       * <code>repeated bytes partyiids = 5;</code>
+       */
+      public Builder addAllPartyiids(
+          java.lang.Iterable<? extends com.google.protobuf.ByteString> values) {
+        ensurePartyiidsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, partyiids_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * PartyIIDs
+       * </pre>
+       *
+       * <code>repeated bytes partyiids = 5;</code>
+       */
+      public Builder clearPartyiids() {
+        partyiids_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000010);
         onChanged();
         return this;
       }
@@ -13776,6 +13982,25 @@ public final class Personhood {
      * <code>required .personhood.Message message = 1;</code>
      */
     ch.epfl.dedis.proto.Personhood.MessageOrBuilder getMessageOrBuilder();
+
+    /**
+     * <pre>
+     * Rewarded is true if this is the first time the message has been read
+     * by this reader.
+     * </pre>
+     *
+     * <code>required bool rewarded = 2;</code>
+     */
+    boolean hasRewarded();
+    /**
+     * <pre>
+     * Rewarded is true if this is the first time the message has been read
+     * by this reader.
+     * </pre>
+     *
+     * <code>required bool rewarded = 2;</code>
+     */
+    boolean getRewarded();
   }
   /**
    * <pre>
@@ -13794,6 +14019,7 @@ public final class Personhood {
       super(builder);
     }
     private ReadMessageReply() {
+      rewarded_ = false;
     }
 
     @java.lang.Override
@@ -13835,6 +14061,11 @@ public final class Personhood {
                 message_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000001;
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              rewarded_ = input.readBool();
               break;
             }
           }
@@ -13895,6 +14126,31 @@ public final class Personhood {
       return message_ == null ? ch.epfl.dedis.proto.Personhood.Message.getDefaultInstance() : message_;
     }
 
+    public static final int REWARDED_FIELD_NUMBER = 2;
+    private boolean rewarded_;
+    /**
+     * <pre>
+     * Rewarded is true if this is the first time the message has been read
+     * by this reader.
+     * </pre>
+     *
+     * <code>required bool rewarded = 2;</code>
+     */
+    public boolean hasRewarded() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <pre>
+     * Rewarded is true if this is the first time the message has been read
+     * by this reader.
+     * </pre>
+     *
+     * <code>required bool rewarded = 2;</code>
+     */
+    public boolean getRewarded() {
+      return rewarded_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -13902,6 +14158,10 @@ public final class Personhood {
       if (isInitialized == 0) return false;
 
       if (!hasMessage()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasRewarded()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -13918,6 +14178,9 @@ public final class Personhood {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeMessage(1, getMessage());
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBool(2, rewarded_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -13929,6 +14192,10 @@ public final class Personhood {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, getMessage());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(2, rewarded_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -13951,6 +14218,11 @@ public final class Personhood {
         result = result && getMessage()
             .equals(other.getMessage());
       }
+      result = result && (hasRewarded() == other.hasRewarded());
+      if (hasRewarded()) {
+        result = result && (getRewarded()
+            == other.getRewarded());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -13965,6 +14237,11 @@ public final class Personhood {
       if (hasMessage()) {
         hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
         hash = (53 * hash) + getMessage().hashCode();
+      }
+      if (hasRewarded()) {
+        hash = (37 * hash) + REWARDED_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getRewarded());
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -14106,6 +14383,8 @@ public final class Personhood {
           messageBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000001);
+        rewarded_ = false;
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -14138,6 +14417,10 @@ public final class Personhood {
         } else {
           result.message_ = messageBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.rewarded_ = rewarded_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -14183,6 +14466,9 @@ public final class Personhood {
         if (other.hasMessage()) {
           mergeMessage(other.getMessage());
         }
+        if (other.hasRewarded()) {
+          setRewarded(other.getRewarded());
+        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -14190,6 +14476,9 @@ public final class Personhood {
 
       public final boolean isInitialized() {
         if (!hasMessage()) {
+          return false;
+        }
+        if (!hasRewarded()) {
           return false;
         }
         if (!getMessage().isInitialized()) {
@@ -14369,6 +14658,58 @@ public final class Personhood {
           message_ = null;
         }
         return messageBuilder_;
+      }
+
+      private boolean rewarded_ ;
+      /**
+       * <pre>
+       * Rewarded is true if this is the first time the message has been read
+       * by this reader.
+       * </pre>
+       *
+       * <code>required bool rewarded = 2;</code>
+       */
+      public boolean hasRewarded() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <pre>
+       * Rewarded is true if this is the first time the message has been read
+       * by this reader.
+       * </pre>
+       *
+       * <code>required bool rewarded = 2;</code>
+       */
+      public boolean getRewarded() {
+        return rewarded_;
+      }
+      /**
+       * <pre>
+       * Rewarded is true if this is the first time the message has been read
+       * by this reader.
+       * </pre>
+       *
+       * <code>required bool rewarded = 2;</code>
+       */
+      public Builder setRewarded(boolean value) {
+        bitField0_ |= 0x00000002;
+        rewarded_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Rewarded is true if this is the first time the message has been read
+       * by this reader.
+       * </pre>
+       *
+       * <code>required bool rewarded = 2;</code>
+       */
+      public Builder clearRewarded() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        rewarded_ = false;
+        onChanged();
+        return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -15192,14 +15533,15 @@ public final class Personhood {
       "\002(\014\022\020\n\010partyiid\030\010 \002(\014\"3\n\013SendMessage\022$\n\007" +
       "message\030\001 \002(\0132\023.personhood.Message\"?\n\014Li" +
       "stMessages\022\r\n\005start\030\001 \002(\021\022\016\n\006number\030\002 \002(" +
-      "\021\022\020\n\010readerid\030\003 \002(\014\"X\n\021ListMessagesReply" +
+      "\021\022\020\n\010readerid\030\003 \002(\014\"k\n\021ListMessagesReply" +
       "\022\020\n\010subjects\030\001 \003(\t\022\016\n\006msgids\030\002 \003(\014\022\020\n\010ba" +
-      "lances\030\003 \003(\004\022\017\n\007rewards\030\004 \003(\004\">\n\013ReadMes" +
-      "sage\022\r\n\005msgid\030\001 \002(\014\022\020\n\010partyiid\030\002 \002(\014\022\016\n" +
-      "\006reader\030\003 \002(\014\"8\n\020ReadMessageReply\022$\n\007mes",
-      "sage\030\001 \002(\0132\023.personhood.Message\"-\n\014Topup" +
-      "Message\022\r\n\005msgid\030\001 \002(\014\022\016\n\006amount\030\002 \002(\004B!" +
-      "\n\023ch.epfl.dedis.protoB\nPersonhood"
+      "lances\030\003 \003(\004\022\017\n\007rewards\030\004 \003(\004\022\021\n\tpartyii" +
+      "ds\030\005 \003(\014\">\n\013ReadMessage\022\r\n\005msgid\030\001 \002(\014\022\020" +
+      "\n\010partyiid\030\002 \002(\014\022\016\n\006reader\030\003 \002(\014\"J\n\020Read",
+      "MessageReply\022$\n\007message\030\001 \002(\0132\023.personho" +
+      "od.Message\022\020\n\010rewarded\030\002 \002(\010\"-\n\014TopupMes" +
+      "sage\022\r\n\005msgid\030\001 \002(\014\022\016\n\006amount\030\002 \002(\004B!\n\023c" +
+      "h.epfl.dedis.protoB\nPersonhood"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -15298,7 +15640,7 @@ public final class Personhood {
     internal_static_personhood_ListMessagesReply_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_personhood_ListMessagesReply_descriptor,
-        new java.lang.String[] { "Subjects", "Msgids", "Balances", "Rewards", });
+        new java.lang.String[] { "Subjects", "Msgids", "Balances", "Rewards", "Partyiids", });
     internal_static_personhood_ReadMessage_descriptor =
       getDescriptor().getMessageTypes().get(14);
     internal_static_personhood_ReadMessage_fieldAccessorTable = new
@@ -15310,7 +15652,7 @@ public final class Personhood {
     internal_static_personhood_ReadMessageReply_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_personhood_ReadMessageReply_descriptor,
-        new java.lang.String[] { "Message", });
+        new java.lang.String[] { "Message", "Rewarded", });
     internal_static_personhood_TopupMessage_descriptor =
       getDescriptor().getMessageTypes().get(16);
     internal_static_personhood_TopupMessage_fieldAccessorTable = new
