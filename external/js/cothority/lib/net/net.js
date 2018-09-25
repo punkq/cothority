@@ -5,7 +5,7 @@ const UUID = require("pure-uuid");
 const protobuf = require("protobufjs");
 const co = require("co");
 const shuffle = require("shuffle-array");
-const WS = require("ws");
+// const WS = require("ws");
 
 const root = require("../protobuf/index.js").root;
 const identity = require("../identity.js");
