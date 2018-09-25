@@ -444,6 +444,7 @@ func (fs *FinalStatement) Hash() ([]byte, error) {
 		return nil, err
 	}
 	for _, a := range fs.Attendees {
+		log.Print("Adding attendee:", a)
 		b, err := a.MarshalBinary()
 		if err != nil {
 			return nil, err
