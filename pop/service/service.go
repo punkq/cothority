@@ -470,6 +470,10 @@ func (s *Service) StoreInstanceID(req *StoreInstanceID) (*StoreInstanceIDReply, 
 
 // GetInstanceID will return the instanceID of a final statement
 func (s *Service) GetInstanceID(req *GetInstanceID) (*GetInstanceIDReply, error) {
+	for id := range s.data.InstanceIDs{
+		log.Printf("ID: %d", []byte(id))
+	}
+	log.Printf("Requested id:", req.PartyID)
 	iid, ok := s.data.InstanceIDs[string(req.PartyID)]
 	if !ok {
 		return nil, errors.New("no such instanceID stored")
@@ -1162,13 +1166,13 @@ func newService(c *onet.Context) (onet.Service, error) {
 		return nil, err
 	}
 	log.Print(s.ServerIdentity(), s.data.Public)
-	if s.data.Finals == nil {
+	if s.data.Finals == nil || false {
 		s.data.Finals = make(map[string]*FinalStatement)
 	}
 	if s.data.merges == nil {
 		s.data.merges = make(map[string]*merge)
 	}
-	if len(s.data.InstanceIDs) == 0 {
+	if len(s.data.InstanceIDs) == 0 || false {
 		s.data.InstanceIDs = map[string]*byzcoin.InstanceID{}
 	}
 	if len(s.data.Signers) == 0 {
