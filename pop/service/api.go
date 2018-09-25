@@ -455,7 +455,6 @@ func (fs *FinalStatement) Hash() ([]byte, error) {
 		}
 	}
 	log.Printf("final hash is: %x", h.Sum(nil))
-	log.Printf("final hash is: %x", h.Sum(nil))
 	return h.Sum(nil), nil
 }
 
