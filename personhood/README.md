@@ -13,13 +13,21 @@ Personhood.online is a very simple implementation of the three basic services:
 Each of the three is based upon the premise that we want to allow formation
 of scalable self-organizing communities.
 
+<<<<<<< HEAD
 THIS IS FUCKING UNSECURE AND ONLY TO BE USED AS A MOCKUP! PLEASE DON'T OPEN
+=======
+THIS IS REALLY INSECURE AND ONLY TO BE USED AS A MOCKUP! PLEASE DON'T OPEN
+>>>>>>> origin/master
 ANY ISSUES ABOUT AUTHENTICATION PROBLEMS OR ANY OTHER STUFF! ONCE WE HAVE A
 WORKING MOCKUP, WE'LL DO PROPER CONTRACTS AND ALL!
 
 ## Currency
 
+<<<<<<< HEAD
 Either use this service or the current coin-services implemented in OmniLedger.
+=======
+Either use this service or the current coin-services implemented in ByzCoin.
+>>>>>>> origin/master
 Probably the latter.
 
 ## Voting and Deliberation

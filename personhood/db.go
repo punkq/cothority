@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"github.com/dedis/cothority"
-	ol "github.com/dedis/cothority/omniledger/service"
+	"github.com/dedis/cothority/byzcoin"
 	"github.com/dedis/onet/network"
 	"github.com/dedis/protobuf"
 )
@@ -52,12 +52,11 @@ type storage1 struct {
 	Read           map[string]*readMsg
 	Questionnaires map[string]*Questionnaire
 	Replies        map[string]*Reply
-	// mapped by the instanceID of the party
-	Parties map[string]*Party
+	Parties        map[string]*Party
 
 	sync.Mutex
 }
 
 type readMsg struct {
-	Readers []ol.InstanceID
+	Readers []byzcoin.InstanceID
 }

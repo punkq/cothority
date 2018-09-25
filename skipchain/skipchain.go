@@ -51,6 +51,7 @@ var dbVersion = 1
 // flag should ideally be the service configuration, but other structs depend
 // on it too, e.g., SkipBlock, so we keep it in a global.
 var enableViewChange bool
+var enableViewChangeOnce sync.Once
 
 var sid onet.ServiceID
 
@@ -75,6 +76,7 @@ type Service struct {
 	closed                  bool
 	closedMutex             sync.Mutex
 	working                 sync.WaitGroup
+	closing                 chan bool
 }
 
 type chainLocker struct {
@@ -500,6 +502,8 @@ func (s *Service) getBlocks(roster *onet.Roster, id SkipBlockID, n int) ([]*Skip
 		return result, nil
 	case <-time.After(s.propTimeout):
 		return nil, errors.New("timeout waiting for GetBlocks reply")
+	case <-s.closing:
+		return nil, errors.New("closing")
 	}
 }
 
@@ -859,7 +863,9 @@ func (s *Service) SetPropTimeout(t time.Duration) {
 
 // EnableViewChange enables view-change, it cannot be turned off afterwards.
 func (s *Service) EnableViewChange() {
-	enableViewChange = true
+	enableViewChangeOnce.Do(func() {
+		enableViewChange = true
+	})
 }
 
 // TestClose is called by Server.Close in case we're in testing. It
@@ -872,6 +878,7 @@ func (s *Service) TestClose() {
 		for _, fct := range s.Storage.Follow {
 			fct.Shutdown()
 		}
+		close(s.closing)
 		s.closedMutex.Unlock()
 		s.working.Wait()
 	} else {
@@ -1276,6 +1283,8 @@ func (s *Service) startBFT(proto string, roster *onet.Roster, msg, data []byte) 
 		return &sig, nil
 	case <-time.After(root.Timeout * 2):
 		return nil, errors.New("timed out while waiting for signature")
+	case <-s.closing:
+		return nil, errors.New("closing down")
 	}
 }
 
@@ -1504,6 +1513,7 @@ func newSkipchainService(c *onet.Context) (onet.Service, error) {
 		Storage:          &Storage{},
 		verifiers:        map[VerifierID]SkipBlockVerifier{},
 		propTimeout:      defaultPropagateTimeout,
+		closing:          make(chan bool),
 	}
 
 	if err := s.tryLoad(); err != nil {

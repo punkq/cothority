@@ -686,9 +686,9 @@ func (s *Service) getIdentityStorage(id ID) *IDBlock {
 // setIdentityStorage saves an IdentityStorage
 func (s *Service) setIdentityStorage(id ID, is *IDBlock) {
 	s.storageMutex.Lock()
-	defer s.storageMutex.Unlock()
 	log.Lvlf3("%s %x %v", s.Context.ServerIdentity(), id[0:8], is.Latest.Device)
 	s.Storage.Identities[string(id)] = is
+	s.storageMutex.Unlock()
 	s.save()
 }
 

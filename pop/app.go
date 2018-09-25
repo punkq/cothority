@@ -20,13 +20,13 @@ import (
 	"strings"
 
 	"github.com/dedis/cothority"
+	"github.com/dedis/cothority/byzcoin"
+	"github.com/dedis/cothority/byzcoin/bcadmin/lib"
+	"github.com/dedis/cothority/byzcoin/darc"
+	"github.com/dedis/cothority/byzcoin/darc/expression"
 	"github.com/dedis/cothority/ftcosi/check"
 	_ "github.com/dedis/cothority/ftcosi/protocol"
 	_ "github.com/dedis/cothority/ftcosi/service"
-	"github.com/dedis/cothority/omniledger/darc"
-	"github.com/dedis/cothority/omniledger/darc/expression"
-	"github.com/dedis/cothority/omniledger/ol/lib"
-	ol "github.com/dedis/cothority/omniledger/service"
 	ph "github.com/dedis/cothority/personhood"
 	"github.com/dedis/protobuf"
 	cli "gopkg.in/urfave/cli.v1"
@@ -86,7 +86,7 @@ func main() {
 	appCli.Version = "0.1"
 	appCli.Commands = []cli.Command{}
 	appCli.Commands = []cli.Command{
-		commandOmniledger,
+		commandBC,
 		commandOrg,
 		commandAttendee,
 		commandAuth,
@@ -630,14 +630,14 @@ func authStore(c *cli.Context) error {
 	return nil
 }
 
-// omniStore creates a new PopParty instance together with a darc that is
+// bcStore creates a new PopParty instance together with a darc that is
 // allowed to invoke methods on it.
-func omniStore(c *cli.Context) error {
+func bcStore(c *cli.Context) error {
 	if c.NArg() < 2 || c.NArg() > 3 {
-		return errors.New("please give: omniledger.cfg key-xxx.cfg [final-id]")
+		return errors.New("please give: bc.cfg key-xxx.cfg [final-id]")
 	}
 
-	// Load the omniledger configuration
+	// Load the configuration
 	cfg, _, err := lib.LoadConfig(c.Args().First())
 	if err != nil {
 		return err
@@ -654,17 +654,17 @@ func omniStore(c *cli.Context) error {
 	// And get the final statement - either we get a hint of the first bytes of
 	// the final statement on the command line, or we will display all final
 	// statements to the user.
-	var finalId []byte
+	var finalID []byte
 	if c.NArg() == 3 {
-		finalId, err = hex.DecodeString(c.Args().Get(2))
+		finalID, err = hex.DecodeString(c.Args().Get(2))
 		if err != nil {
 			return err
 		}
 	}
 
-	// Fetch all final statements from all nodes in the roster of omniledger.
+	// Fetch all final statements from all nodes in the roster.
 	// This supposes that there is at least an overlap of the servers who were
-	// involved in the pop-party and the servers holding omniledger.
+	// involved in the pop-party and the servers holding the ledger.
 	finalStatements := map[string]*service.FinalStatement{}
 	for _, s := range cfg.Roster.List {
 		log.Info("Looking up final statements on host", s)
@@ -678,20 +678,20 @@ func omniStore(c *cli.Context) error {
 		}
 	}
 
-	if len(finalId) > 0 {
+	if len(finalID) > 0 {
 		// Filter using finalId
 		for k := range finalStatements {
-			if bytes.Compare([]byte(k[0:len(finalId)]), finalId) != 0 {
+			if bytes.Compare([]byte(k[0:len(finalID)]), finalID) != 0 {
 				delete(finalStatements, k)
 			}
 		}
 	}
 
 	if len(finalStatements) == 0 {
-		if len(finalId) > 0 {
+		if len(finalID) > 0 {
 			return errors.New("didn't find a final statement starting with the bytes given. Try no search")
 		}
-		return errors.New("none of the conodes of omniledger has any party stored")
+		return errors.New("none of the conodes has any party stored")
 	}
 
 	if len(finalStatements) > 1 {
@@ -703,7 +703,7 @@ func omniStore(c *cli.Context) error {
 
 	var finalStatement *service.FinalStatement
 	for k, v := range finalStatements {
-		finalId = []byte(k)
+		finalID = []byte(k)
 		finalStatement = v
 	}
 	if err != nil {
@@ -740,14 +740,14 @@ func omniStore(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	inst := ol.Instruction{
-		InstanceID: ol.NewInstanceID(cfg.GenesisDarc.GetBaseID()),
-		Nonce:      ol.Nonce{},
+	inst := byzcoin.Instruction{
+		InstanceID: byzcoin.NewInstanceID(cfg.GenesisDarc.GetBaseID()),
+		Nonce:      byzcoin.Nonce{},
 		Index:      0,
 		Length:     1,
-		Spawn: &ol.Spawn{
-			ContractID: ol.ContractDarcID,
-			Args: ol.Arguments{{
+		Spawn: &byzcoin.Spawn{
+			ContractID: byzcoin.ContractDarcID,
+			Args: byzcoin.Arguments{{
 				Name:  "darc",
 				Value: orgDarcBuf,
 			}},
@@ -757,11 +757,11 @@ func omniStore(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	ct := ol.ClientTransaction{
-		Instructions: ol.Instructions{inst},
+	ct := byzcoin.ClientTransaction{
+		Instructions: byzcoin.Instructions{inst},
 	}
-	log.Info("Contacting omniledger to store the new darc")
-	olc := ol.NewClient(cfg.OmniledgerID, cfg.Roster)
+	log.Info("Contacting ByzCoin to store the new darc")
+	olc := byzcoin.NewClient(cfg.ByzCoinID, cfg.Roster)
 	_, err = olc.AddTransactionAndWait(ct, 10)
 	if err != nil {
 		return err
@@ -771,14 +771,14 @@ func omniStore(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	inst = ol.Instruction{
-		InstanceID: ol.NewInstanceID(orgDarc.GetBaseID()),
-		Nonce:      ol.Nonce{},
+	inst = byzcoin.Instruction{
+		InstanceID: byzcoin.NewInstanceID(orgDarc.GetBaseID()),
+		Nonce:      byzcoin.Nonce{},
 		Index:      0,
 		Length:     1,
-		Spawn: &ol.Spawn{
+		Spawn: &byzcoin.Spawn{
 			ContractID: service.ContractPopParty,
-			Args: ol.Arguments{{
+			Args: byzcoin.Arguments{{
 				Name:  "FinalStatement",
 				Value: partyConfigBuf,
 			}},
@@ -788,10 +788,10 @@ func omniStore(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	ct = ol.ClientTransaction{
-		Instructions: ol.Instructions{inst},
+	ct = byzcoin.ClientTransaction{
+		Instructions: byzcoin.Instructions{inst},
 	}
-	log.Info("Contacting omniledger to spawn the new party")
+	log.Info("Contacting ByzCoin to spawn the new party")
 	_, err = olc.AddTransactionAndWait(ct, 10)
 	if err != nil {
 		return err
@@ -800,7 +800,7 @@ func omniStore(c *cli.Context) error {
 	log.Info("Storing InstanceID in pop-service")
 	iid := inst.DeriveID("")
 	for _, c := range cfg.Roster.List {
-		err = service.NewClient().StoreInstanceID(c.Address, finalId, iid)
+		err = service.NewClient().StoreInstanceID(c.Address, finalID, iid)
 		if err != nil {
 			log.Error("couldn't store instanceID: " + err.Error())
 		}
@@ -810,13 +810,13 @@ func omniStore(c *cli.Context) error {
 	return nil
 }
 
-// omniFinalize stores a final statement of a party in Omniledger
-func omniFinalize(c *cli.Context) error {
+// bcFinalize stores a final statement of a party
+func bcFinalize(c *cli.Context) error {
 	if c.NArg() != 3 {
-		return errors.New("please give: omniledger.cfg key-xxx.cfg partyID")
+		return errors.New("please give: bc.cfg key-xxx.cfg partyID")
 	}
 
-	// Load the omniledger configuration
+	// Load the configuration
 	cfg, ocl, err := lib.LoadConfig(c.Args().First())
 	if err != nil {
 		return err
@@ -860,8 +860,8 @@ func omniFinalize(c *cli.Context) error {
 	if err != nil {
 		return errors.New("couldn't get instanceID: " + err.Error())
 	}
-	if partyInstance.Equal(ol.InstanceID{}) {
-		return errors.New("No instanceID stored!")
+	if partyInstance.Equal(byzcoin.InstanceID{}) {
+		return errors.New("no instanceID stored")
 	}
 
 	sigBuf, err := signer.Ed25519.Point.MarshalBinary()
@@ -869,16 +869,16 @@ func omniFinalize(c *cli.Context) error {
 		return errors.New("Couldn't get point: " + err.Error())
 	}
 
-	log.Info("Sending finalize-instruction to omniledger")
-	ctx := ol.ClientTransaction{
-		Instructions: ol.Instructions{ol.Instruction{
+	log.Info("Sending finalize-instruction")
+	ctx := byzcoin.ClientTransaction{
+		Instructions: byzcoin.Instructions{byzcoin.Instruction{
 			InstanceID: partyInstance,
 			Index:      0,
 			Length:     1,
-			Invoke: &ol.Invoke{
+			Invoke: &byzcoin.Invoke{
 				Command: "Finalize",
-				Args: ol.Arguments{
-					ol.Argument{
+				Args: byzcoin.Arguments{
+					byzcoin.Argument{
 						Name:  "FinalStatement",
 						Value: fsBuf,
 					},
@@ -901,7 +901,7 @@ func omniFinalize(c *cli.Context) error {
 
 	log.Print("linkpop", fs.Desc.Roster)
 	err = ph.NewClient().LinkPoP(fs.Desc.Roster.List[0], ph.Party{
-		OmniLedgerID:   cfg.OmniledgerID,
+		ByzCoinID:      cfg.ByzCoinID,
 		FinalStatement: *fs,
 		InstanceID:     partyInstance,
 		Darc:           cfg.GenesisDarc,
@@ -914,13 +914,13 @@ func omniFinalize(c *cli.Context) error {
 	return nil
 }
 
-// omniCoinShow returns the number of coins in the account of the user.
-func omniCoinShow(c *cli.Context) error {
+// bcCoinShow returns the number of coins in the account of the user.
+func bcCoinShow(c *cli.Context) error {
 	if c.NArg() != 3 {
-		return errors.New("please give: omniledger.cfg partyID (public-key | accountID)")
+		return errors.New("please give: bc.cfg partyID (public-key | accountID)")
 	}
 
-	// Load the omniledger configuration
+	// Load the configuration
 	_, ocl, err := lib.LoadConfig(c.Args().First())
 	if err != nil {
 		return err
@@ -965,7 +965,7 @@ func omniCoinShow(c *cli.Context) error {
 	if err != nil {
 		return errors.New("couldn't get value from proof: " + err.Error())
 	}
-	ci := ol.Coin{}
+	ci := byzcoin.Coin{}
 	err = protobuf.Decode(v[0], &ci)
 	if err != nil {
 		return errors.New("couldn't unmarshal coin balance: " + err.Error())
@@ -974,12 +974,12 @@ func omniCoinShow(c *cli.Context) error {
 	return nil
 }
 
-func omniCoinTransfer(c *cli.Context) error {
+func bcCoinTransfer(c *cli.Context) error {
 	if c.NArg() != 5 {
-		return errors.New("please give: omniledger.cfg partyID source_private_key dst_public_key amount")
+		return errors.New("please give: bc.cfg partyID source_private_key dst_public_key amount")
 	}
 
-	// Load the omniledger configuration
+	// Load the configuration
 	_, ocl, err := lib.LoadConfig(c.Args().First())
 	if err != nil {
 		return err
@@ -1058,14 +1058,14 @@ func omniCoinTransfer(c *cli.Context) error {
 	log.Info("Transferring coins")
 	amountBuf := make([]byte, 8)
 	binary.LittleEndian.PutUint64(amountBuf, amount)
-	ctx := ol.ClientTransaction{
-		Instructions: ol.Instructions{ol.Instruction{
-			InstanceID: ol.NewInstanceID(srcAddr),
+	ctx := byzcoin.ClientTransaction{
+		Instructions: byzcoin.Instructions{byzcoin.Instruction{
+			InstanceID: byzcoin.NewInstanceID(srcAddr),
 			Index:      0,
 			Length:     1,
-			Invoke: &ol.Invoke{
+			Invoke: &byzcoin.Invoke{
 				Command: "transfer",
-				Args: ol.Arguments{{
+				Args: byzcoin.Arguments{{
 					Name:  "coins",
 					Value: amountBuf,
 				},
