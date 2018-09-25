@@ -202,13 +202,13 @@ func (s *Service) StoreConfig(req *StoreConfig) (network.Message, error) {
 		log.Print()
 		return nil, errors.New("Invalid signature" + err.Error())
 	}
-		log.Print()
+	log.Print()
 	s.data.Finals[string(hash)] = &FinalStatement{Desc: req.Desc, Signature: []byte{}}
 	s.syncs[string(hash)] = &syncChans{
 		ccChannel: make(chan *CheckConfigReply, 1),
 		mcChannel: make(chan *MergeConfigReply, 1),
 	}
-		log.Print()
+	log.Print()
 	if len(req.Desc.Parties) > 0 {
 		meta := newMerge()
 		s.data.merges[string(hash)] = meta
@@ -243,7 +243,7 @@ func (s *Service) StoreConfig(req *StoreConfig) (network.Message, error) {
 		//		s.proposedDescription[index+1:]...)
 		//}
 	}
-		log.Print()
+	log.Print()
 	return &StoreConfigReply{hash}, nil
 }
 
@@ -727,7 +727,7 @@ func (s *Service) bftVerifyFinal(Msg, Data []byte) bool {
 	hash, err = fs.Hash()
 
 	if !bytes.Equal(hash, Msg) {
-		log.Error("hash of lccocal Final stmt and msg are not equal")
+		log.Error("hash of local Final stmt and msg are not equal")
 		return false
 	}
 	s.verifyFinalBuffer.Store(sliceToArr(Msg), true)

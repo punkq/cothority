@@ -438,11 +438,13 @@ func (fs *FinalStatement) ToToml() ([]byte, error) {
 // in the hashing it will return a nil-slice and the error.
 func (fs *FinalStatement) Hash() ([]byte, error) {
 	h := cothority.Suite.Hash()
+	log.Printf("Description-hash is: %x", fs.Desc.Hash())
 	_, err := h.Write(fs.Desc.Hash())
 	if err != nil {
 		return nil, err
 	}
 	for _, a := range fs.Attendees {
+		log.Print("Adding attendee:", a)
 		b, err := a.MarshalBinary()
 		if err != nil {
 			return nil, err
