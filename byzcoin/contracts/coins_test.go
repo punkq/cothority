@@ -251,3 +251,9 @@ func (ct cvTest) GetValue(key []byte) ([]byte, error) {
 func (ct cvTest) GetContractID(key []byte) (string, error) {
 	return ct.contractIDs[string(key)], nil
 }
+func (ct cvTest) LogLeader(args ...interface{}) {
+	log.Lvl1(args...)
+}
+func (ct cvTest) LogLeaderf(fmt string, args ...interface{}) {
+	log.Lvlf1(fmt, args...)
+}

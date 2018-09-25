@@ -36,6 +36,10 @@ type CollectionView interface {
 	// an error if something went wrong. A non-existing key returns an
 	// error.
 	GetValues(key []byte) (value []byte, contractID string, darcID darc.ID, err error)
+	// LogLeader allows to log events only on the leader
+	LogLeader(args ...interface{})
+	// LogLeaderf allows to log events only on the leader
+	LogLeaderf(fmt string, args ...interface{})
 }
 
 // roCollection is a wrapper for a collection that satisfies interface
@@ -44,7 +48,8 @@ type CollectionView interface {
 // safety, not real security. If the holder of the CollectionView chooses to
 // use package unsafe, then it's all over; they can get write access.
 type roCollection struct {
-	c *collection.Collection
+	c        *collection.Collection
+	isLeader bool
 }
 
 // Get returns the collection.Getter for the key.
@@ -56,6 +61,18 @@ func (r *roCollection) Get(key []byte) collection.Getter {
 // does not exist, it returns an error.
 func (r *roCollection) GetValues(key []byte) (value []byte, contractID string, darcID darc.ID, err error) {
 	return getValueContract(r, key)
+}
+
+func (r *roCollection) LogLeader(args ...interface{}) {
+	if r.isLeader {
+		log.Lvl1(args...)
+	}
+}
+
+func (r *roCollection) LogLeaderf(fmt string, args ...interface{}) {
+	if r.isLeader {
+		log.Lvlf1(fmt, args...)
+	}
 }
 
 // ContractFn is the type signature of the class functions
@@ -318,6 +335,14 @@ func (c *collectionDB) tryHash(ts []StateChange) (mr []byte, rerr error) {
 	}
 	mr = c.coll.GetRoot()
 	return
+}
+
+func (c *collectionDB) LogLeader(args ...interface{}) {
+	log.Lvl1(args...)
+}
+
+func (c *collectionDB) LogLeaderf(fmt string, args ...interface{}) {
+	log.Lvlf1(fmt, args...)
 }
 
 func getInstanceDarc(c CollectionView, iid InstanceID) (*darc.Darc, error) {

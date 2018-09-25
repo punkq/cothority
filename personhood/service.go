@@ -135,7 +135,7 @@ func (s *Service) SendMessage(sm *SendMessage) (*StringReply, error) {
 		return nil, errors.New("this message-ID already exists")
 	}
 	s.storage.Messages[idStr] = &sm.Message
-	s.storage.Read[idStr] = &readMsg{[]ol.InstanceID{sm.Message.Author}}
+	s.storage.Read[idStr] = &readMsg{[]byzcoin.InstanceID{sm.Message.Author}}
 
 	return &StringReply{}, s.save()
 }

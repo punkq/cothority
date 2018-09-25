@@ -35,11 +35,6 @@ var CoinName = iid("olCoin")
 func ContractCoin(cdb byzcoin.CollectionView, inst byzcoin.Instruction, c []byzcoin.Coin) (sc []byzcoin.StateChange, cOut []byzcoin.Coin, err error) {
 	cOut = c
 
-	err = inst.VerifyDarcSignature(cdb)
-	if err != nil {
-		return
-	}
-
 	var value []byte
 	var darcID darc.ID
 	value, _, darcID, err = cdb.GetValues(inst.InstanceID.Slice())
@@ -61,7 +56,7 @@ func ContractCoin(cdb byzcoin.CollectionView, inst byzcoin.Instruction, c []byzc
 	case byzcoin.SpawnType:
 		// Spawn creates a new coin account as a separate instance.
 		ca := inst.DeriveID("")
-		log.Lvlf3("Spawning coin to %x", ca.Slice())
+		cdb.LogLeaderf("Spawning coin to %x", ca.Slice())
 		if t := inst.Spawn.Args.Search("type"); t != nil {
 			if len(t) != len(byzcoin.InstanceID{}) {
 				return nil, nil, errors.New("type needs to be an InstanceID")
@@ -82,6 +77,7 @@ func ContractCoin(cdb byzcoin.CollectionView, inst byzcoin.Instruction, c []byzc
 	case byzcoin.InvokeType:
 		// Invoke is one of "mint", "transfer", "fetch", or "store".
 		var coinsArg uint64
+		log.Print("command is:", inst.Invoke.Command)
 
 		if inst.Invoke.Command != "store" {
 			coinsBuf := inst.Invoke.Args.Search("coins")
@@ -107,11 +103,15 @@ func ContractCoin(cdb byzcoin.CollectionView, inst byzcoin.Instruction, c []byzc
 				cid string
 				did darc.ID
 			)
+
+			cdb.LogLeaderf("transferring %d from %s to %x", coinsArg, inst.InstanceID, target)
+
 			v, cid, did, err = cdb.GetValues(target)
 			if err == nil && cid != ContractCoinID {
 				err = errors.New("destination is not a coin contract")
 			}
 			if err != nil {
+				err = errors.New("Couldn't get values of destination: " + err.Error())
 				return
 			}
 
@@ -120,6 +120,8 @@ func ContractCoin(cdb byzcoin.CollectionView, inst byzcoin.Instruction, c []byzc
 			if err != nil {
 				return nil, nil, errors.New("couldn't unmarshal target account: " + err.Error())
 			}
+
+			// transfer sends a given amount of coins to another account.
 			err = ci.SafeSub(coinsArg)
 			if err != nil {
 				return
@@ -163,6 +165,7 @@ func ContractCoin(cdb byzcoin.CollectionView, inst byzcoin.Instruction, c []byzc
 		}
 		// Finally update the coin value.
 		var ciBuf []byte
+		log.Printf("Updating %x with %+v", inst.InstanceID, ci)
 		ciBuf, err = protobuf.Encode(&ci)
 		sc = append(sc, byzcoin.NewStateChange(byzcoin.Update, inst.InstanceID,
 			ContractCoinID, ciBuf, darcID))
